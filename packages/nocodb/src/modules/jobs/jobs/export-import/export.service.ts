@@ -67,7 +67,10 @@ export class ExportService {
       if (!fndBase) sources.push(source);
 
       if (!modelsMap.has(source.id)) {
-        modelsMap.set(source.id, await generateBaseIdMap(source, idMap));
+        modelsMap.set(
+          source.id,
+          await generateBaseIdMap(context, source, idMap),
+        );
       }
 
       await model.getColumns(context);
@@ -445,7 +448,7 @@ export class ExportService {
   ) {
     const { dataStream, linkStream, handledMmList } = param;
 
-    const { model, view } = await getViewAndModelByAliasOrId({
+    const { model, view } = await getViewAndModelByAliasOrId(context, {
       baseName: param.baseId,
       tableName: param.modelId,
       viewName: param.viewId,
@@ -569,6 +572,7 @@ export class ExportService {
 
     try {
       await this.recursiveRead(
+        context,
         formatData,
         baseModel,
         dataStream,
@@ -639,6 +643,7 @@ export class ExportService {
 
         try {
           await this.recursiveLinkRead(
+            context,
             mmFormatData,
             mmBaseModel,
             linkStream,
@@ -667,6 +672,7 @@ export class ExportService {
   }
 
   async recursiveRead(
+    context: NcContext,
     formatter: (data: any) => { data: any },
     baseModel: BaseModelSqlv2,
     stream: Readable,
@@ -679,7 +685,7 @@ export class ExportService {
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       this.datasService
-        .getDataList({
+        .getDataList(context, {
           model,
           view,
           query: { limit, offset, fields },
@@ -699,6 +705,7 @@ export class ExportService {
               resolve();
             } else {
               this.recursiveRead(
+                context,
                 formatter,
                 baseModel,
                 stream,
@@ -720,6 +727,7 @@ export class ExportService {
   }
 
   async recursiveLinkRead(
+    context: NcContext,
     formatter: (data: any) => { data: any },
     baseModel: BaseModelSqlv2,
     linkStream: Readable,
@@ -732,7 +740,7 @@ export class ExportService {
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       this.datasService
-        .getDataList({
+        .getDataList(context, {
           model,
           view,
           query: { limit, offset, fields },
@@ -751,6 +759,7 @@ export class ExportService {
               resolve();
             } else {
               this.recursiveLinkRead(
+                context,
                 formatter,
                 baseModel,
                 linkStream,

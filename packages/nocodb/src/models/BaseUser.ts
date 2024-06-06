@@ -8,6 +8,7 @@ import {
   CacheGetType,
   CacheScope,
   MetaTable,
+  RootScopes,
 } from '~/utils/globals';
 import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
@@ -355,13 +356,12 @@ export default class BaseUser {
   }
 
   static async getProjectsIdList(
-    context: NcContext,
     userId: string,
     ncMeta = Noco.ncMeta,
   ): Promise<BaseUser[]> {
     return await ncMeta.metaList2(
-      context.workspace_id,
-      context.base_id,
+      RootScopes.BASE,
+      RootScopes.BASE,
       MetaTable.PROJECT_USERS,
       {
         condition: { fk_user_id: userId },
@@ -455,15 +455,7 @@ export default class BaseUser {
         .map((p) => {
           const base = Base.castType(p);
           base.meta = parseMetaProp(base);
-          promises.push(
-            base.getSources(
-              {
-                workspace_id: base.fk_workspace_id,
-                base_id: base.id,
-              },
-              ncMeta,
-            ),
-          );
+          promises.push(base.getSources(ncMeta));
           return base;
         });
 

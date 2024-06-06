@@ -78,7 +78,7 @@ export class DuplicateProcessor {
         throw new Error(`Export failed for source '${source.id}'`);
       }
 
-      await dupProject.getSources(context);
+      await dupProject.getSources();
 
       const dupBase = dupProject.sources[0];
 

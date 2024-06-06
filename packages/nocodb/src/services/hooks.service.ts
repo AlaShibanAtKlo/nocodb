@@ -30,12 +30,16 @@ export class HooksService {
     }
   }
 
-  async hookList(param: { tableId: string }) {
-    return await Hook.list({ fk_model_id: param.tableId });
+  async hookList(context: NcContext, param: { tableId: string }) {
+    return await Hook.list(context, { fk_model_id: param.tableId });
   }
 
-  async hookLogList(param: { query: any; hookId: string }) {
-    return await HookLog.list({ fk_hook_id: param.hookId }, param.query);
+  async hookLogList(context: NcContext, param: { query: any; hookId: string }) {
+    return await HookLog.list(
+      context,
+      { fk_hook_id: param.hookId },
+      param.query,
+    );
   }
 
   async hookCreate(
@@ -50,7 +54,7 @@ export class HooksService {
 
     this.validateHookPayload(param.hook.notification);
 
-    const hook = await Hook.insert({
+    const hook = await Hook.insert(context, {
       ...param.hook,
       fk_model_id: param.tableId,
     } as any);
@@ -63,14 +67,17 @@ export class HooksService {
     return hook;
   }
 
-  async hookDelete(param: { hookId: string; req: NcRequest }) {
-    const hook = await Hook.get(param.hookId);
+  async hookDelete(
+    context: NcContext,
+    param: { hookId: string; req: NcRequest },
+  ) {
+    const hook = await Hook.get(context, param.hookId);
 
     if (!hook) {
       NcError.badRequest('Hook not found');
     }
 
-    await Hook.delete(param.hookId);
+    await Hook.delete(context, param.hookId);
     this.appHooksService.emit(AppEvents.WEBHOOK_DELETE, {
       hook,
       req: param.req,
@@ -78,14 +85,17 @@ export class HooksService {
     return true;
   }
 
-  async hookUpdate(param: {
-    hookId: string;
-    hook: HookReqType;
-    req: NcRequest;
-  }) {
+  async hookUpdate(
+    context: NcContext,
+    param: {
+      hookId: string;
+      hook: HookReqType;
+      req: NcRequest;
+    },
+  ) {
     validatePayload('swagger.json#/components/schemas/HookReq', param.hook);
 
-    const hook = await Hook.get(param.hookId);
+    const hook = await Hook.get(context, param.hookId);
 
     if (!hook) {
       NcError.badRequest('Hook not found');
@@ -93,7 +103,7 @@ export class HooksService {
 
     this.validateHookPayload(param.hook.notification);
 
-    const res = await Hook.update(param.hookId, param.hook);
+    const res = await Hook.update(context, param.hookId, param.hook);
 
     this.appHooksService.emit(AppEvents.WEBHOOK_UPDATE, {
       hook: {
@@ -106,11 +116,14 @@ export class HooksService {
     return res;
   }
 
-  async hookTest(param: {
-    tableId: string;
-    hookTest: HookTestReqType;
-    req: NcRequest;
-  }) {
+  async hookTest(
+    context: NcContext,
+    param: {
+      tableId: string;
+      hookTest: HookTestReqType;
+      req: NcRequest;
+    },
+  ) {
     validatePayload(
       'swagger.json#/components/schemas/HookTestReq',
       param.hookTest,
@@ -118,14 +131,14 @@ export class HooksService {
 
     this.validateHookPayload(param.hookTest.hook?.notification);
 
-    const model = await Model.getByIdOrName({ id: param.tableId });
+    const model = await Model.getByIdOrName(context, { id: param.tableId });
 
     const {
       hook,
       payload: { data, user },
     } = param.hookTest;
     try {
-      await invokeWebhook({
+      await invokeWebhook(context, {
         hook: new Hook(hook),
         model: model,
         view: null,
@@ -148,12 +161,17 @@ export class HooksService {
     return true;
   }
 
-  async tableSampleData(param: {
-    tableId: string;
-    operation: HookType['operation'];
-    version: any; // HookType['version'];
-  }) {
-    const model = new Model(await Model.getByIdOrName({ id: param.tableId }));
+  async tableSampleData(
+    context: NcContext,
+    param: {
+      tableId: string;
+      operation: HookType['operation'];
+      version: any; // HookType['version'];
+    },
+  ) {
+    const model = new Model(
+      await Model.getByIdOrName(context, { id: param.tableId }),
+    );
 
     if (param.version === 'v1') {
       return await populateSamplePayload(model, false, param.operation);
@@ -161,7 +179,7 @@ export class HooksService {
     return await populateSamplePayloadV2(model, false, param.operation);
   }
 
-  async hookLogCount(param: { hookId: string }) {
-    return await HookLog.count({ hookId: param.hookId });
+  async hookLogCount(context: NcContext, param: { hookId: string }) {
+    return await HookLog.count(context, { hookId: param.hookId });
   }
 }

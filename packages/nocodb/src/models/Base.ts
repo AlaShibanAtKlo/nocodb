@@ -150,15 +150,7 @@ export default class Base implements BaseType {
       )
       .map((p) => {
         const base = this.castType(p);
-        promises.push(
-          base.getSources(
-            {
-              workspace_id: base.fk_workspace_id,
-              base_id: base.id,
-            },
-            ncMeta,
-          ),
-        );
+        promises.push(base.getSources(ncMeta));
         return base;
       });
 
@@ -201,12 +193,9 @@ export default class Base implements BaseType {
     return this.castType(baseData);
   }
 
-  async getSources(
-    context: NcContext,
-    ncMeta = Noco.ncMeta,
-  ): Promise<Source[]> {
+  async getSources(ncMeta = Noco.ncMeta): Promise<Source[]> {
     return (this.sources = await Source.list(
-      context,
+      { workspace_id: this.fk_workspace_id, base_id: this.id },
       { baseId: this.id },
       ncMeta,
     ));
@@ -254,7 +243,7 @@ export default class Base implements BaseType {
     if (baseData) {
       const base = this.castType(baseData);
 
-      await base.getSources(context, ncMeta);
+      await base.getSources(ncMeta);
 
       return base;
     }
@@ -467,7 +456,7 @@ export default class Base implements BaseType {
   ) {
     const base = await this.getByTitle(context, title, ncMeta);
     if (base) {
-      await base.getSources(context, ncMeta);
+      await base.getSources(ncMeta);
     }
 
     return base;
@@ -571,7 +560,7 @@ export default class Base implements BaseType {
     base.meta = parseMetaProp(base);
 
     if (base) {
-      await base.getSources(context, ncMeta);
+      await base.getSources(ncMeta);
     }
 
     return base;
@@ -584,7 +573,7 @@ export default class Base implements BaseType {
   ) {
     const base = await this.get(context, baseId, ncMeta);
     if (base) {
-      const sources = await base.getSources(context, ncMeta);
+      const sources = await base.getSources(ncMeta);
       for (const source of sources) {
         await NcConnectionMgrv2.deleteAwait(source);
       }

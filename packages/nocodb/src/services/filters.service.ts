@@ -11,21 +11,24 @@ import { Filter, Hook, View } from '~/models';
 export class FiltersService {
   constructor(protected readonly appHooksService: AppHooksService) {}
 
-  async hookFilterCreate(param: {
-    filter: FilterReqType;
-    hookId: any;
-    user: UserType;
-    req: NcRequest;
-  }) {
+  async hookFilterCreate(
+    context: NcContext,
+    param: {
+      filter: FilterReqType;
+      hookId: any;
+      user: UserType;
+      req: NcRequest;
+    },
+  ) {
     validatePayload('swagger.json#/components/schemas/FilterReq', param.filter);
 
-    const hook = await Hook.get(param.hookId);
+    const hook = await Hook.get(context, param.hookId);
 
     if (!hook) {
       NcError.badRequest('Hook not found');
     }
 
-    const filter = await Filter.insert({
+    const filter = await Filter.insert(context, {
       ...param.filter,
       fk_hook_id: param.hookId,
     });
@@ -38,18 +41,21 @@ export class FiltersService {
     return filter;
   }
 
-  async hookFilterList(param: { hookId: any }) {
-    return Filter.rootFilterListByHook({ hookId: param.hookId });
+  async hookFilterList(context: NcContext, param: { hookId: any }) {
+    return Filter.rootFilterListByHook(context, { hookId: param.hookId });
   }
 
-  async filterDelete(param: { filterId: string; req: NcRequest }) {
-    const filter = await Filter.get(param.filterId);
+  async filterDelete(
+    context: NcContext,
+    param: { filterId: string; req: NcRequest },
+  ) {
+    const filter = await Filter.get(context, param.filterId);
 
     if (!filter) {
       NcError.badRequest('Filter not found');
     }
 
-    await Filter.delete(param.filterId);
+    await Filter.delete(context, param.filterId);
 
     this.appHooksService.emit(AppEvents.FILTER_DELETE, {
       filter,
@@ -70,9 +76,9 @@ export class FiltersService {
   ) {
     validatePayload('swagger.json#/components/schemas/FilterReq', param.filter);
 
-    const view = await View.get(param.viewId);
+    const view = await View.get(context, param.viewId);
 
-    const filter = await Filter.insert({
+    const filter = await Filter.insert(context, {
       ...param.filter,
       fk_view_id: param.viewId,
     });
@@ -86,21 +92,28 @@ export class FiltersService {
     return filter;
   }
 
-  async filterUpdate(param: {
-    filter: FilterReqType;
-    filterId: string;
-    user: UserType;
-    req: NcRequest;
-  }) {
+  async filterUpdate(
+    context: NcContext,
+    param: {
+      filter: FilterReqType;
+      filterId: string;
+      user: UserType;
+      req: NcRequest;
+    },
+  ) {
     validatePayload('swagger.json#/components/schemas/FilterReq', param.filter);
 
-    const filter = await Filter.get(param.filterId);
+    const filter = await Filter.get(context, param.filterId);
 
     if (!filter) {
       NcError.badRequest('Filter not found');
     }
     // todo: type correction
-    const res = await Filter.update(param.filterId, param.filter as Filter);
+    const res = await Filter.update(
+      context,
+      param.filterId,
+      param.filter as Filter,
+    );
 
     this.appHooksService.emit(AppEvents.FILTER_UPDATE, {
       filter,
@@ -110,19 +123,21 @@ export class FiltersService {
     return res;
   }
 
-  async filterChildrenList(param: { filterId: string }) {
-    return Filter.parentFilterList({
+  async filterChildrenList(context: NcContext, param: { filterId: string }) {
+    return Filter.parentFilterList(context, {
       parentId: param.filterId,
     });
   }
 
-  async filterGet(param: { filterId: string }) {
-    const filter = await Filter.get(param.filterId);
+  async filterGet(context: NcContext, param: { filterId: string }) {
+    const filter = await Filter.get(context, param.filterId);
     return filter;
   }
 
-  async filterList(param: { viewId: string }) {
-    const filter = await Filter.rootFilterList({ viewId: param.viewId });
+  async filterList(context: NcContext, param: { viewId: string }) {
+    const filter = await Filter.rootFilterList(context, {
+      viewId: param.viewId,
+    });
     return filter;
   }
 

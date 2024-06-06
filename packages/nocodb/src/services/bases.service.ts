@@ -13,7 +13,7 @@ import type {
   ProjectUpdateReqType,
   UserType,
 } from 'nocodb-sdk';
-import type { NcRequest } from '~/interface/config';
+import type { NcContext, NcRequest } from '~/interface/config';
 import { AppHooksService } from '~/services/app-hooks/app-hooks.service';
 import { populateMeta, validatePayload } from '~/helpers';
 import { NcError } from '~/helpers/catchError';
@@ -36,10 +36,13 @@ export class BasesService {
     protected tablesService: TablesService,
   ) {}
 
-  async baseList(param: {
-    user: { id: string; roles?: string | Record<string, boolean> };
-    query?: any;
-  }) {
+  async baseList(
+    context: NcContext,
+    param: {
+      user: { id: string; roles?: string | Record<string, boolean> };
+      query?: any;
+    },
+  ) {
     const bases = extractRolesObj(param.user?.roles)[OrgUserRoles.SUPER_ADMIN]
       ? await Base.list(param.query)
       : await BaseUser.getProjectsList(param.user.id, param.query);
@@ -47,8 +50,8 @@ export class BasesService {
     return bases;
   }
 
-  async getProjectWithInfo(param: { baseId: string }) {
-    const base = await Base.getWithInfo(param.baseId);
+  async getProjectWithInfo(context: NcContext, param: { baseId: string }) {
+    const base = await Base.getWithInfo(context, param.baseId);
     return base;
   }
 
@@ -60,18 +63,21 @@ export class BasesService {
     return sanitizedProject;
   }
 
-  async baseUpdate(param: {
-    baseId: string;
-    base: ProjectUpdateReqType;
-    user: UserType;
-    req: NcRequest;
-  }) {
+  async baseUpdate(
+    context: NcContext,
+    param: {
+      baseId: string;
+      base: ProjectUpdateReqType;
+      user: UserType;
+      req: NcRequest;
+    },
+  ) {
     validatePayload(
       'swagger.json#/components/schemas/ProjectUpdateReq',
       param.base,
     );
 
-    const base = await Base.getWithInfo(param.baseId);
+    const base = await Base.getWithInfo(context, param.baseId);
 
     const data: Partial<Base> = extractPropsAndSanitize(param?.base as Base, [
       'title',
@@ -80,13 +86,13 @@ export class BasesService {
       'status',
       'order',
     ]);
-    await this.validateProjectTitle(data, base);
+    await this.validateProjectTitle(context, data, base);
 
     if (data?.order !== undefined) {
       data.order = !isNaN(+data.order) ? +data.order : 0;
     }
 
-    const result = await Base.update(param.baseId, data);
+    const result = await Base.update(context, param.baseId, data);
 
     this.appHooksService.emit(AppEvents.PROJECT_UPDATE, {
       base,
@@ -97,24 +103,31 @@ export class BasesService {
     return result;
   }
 
-  protected async validateProjectTitle(data: Partial<Base>, base: Base) {
+  protected async validateProjectTitle(
+    context: NcContext,
+    data: Partial<Base>,
+    base: Base,
+  ) {
     if (
       data?.title &&
       base.title !== data.title &&
-      (await Base.getByTitle(data.title))
+      (await Base.getByTitle(context, data.title))
     ) {
       NcError.badRequest('Base title already in use');
     }
   }
 
-  async baseSoftDelete(param: { baseId: any; user: UserType; req: NcRequest }) {
-    const base = await Base.getWithInfo(param.baseId);
+  async baseSoftDelete(
+    context: NcContext,
+    param: { baseId: any; user: UserType; req: NcRequest },
+  ) {
+    const base = await Base.getWithInfo(context, param.baseId);
 
     if (!base) {
       NcError.baseNotFound(param.baseId);
     }
 
-    await Base.softDelete(param.baseId);
+    await Base.softDelete(context, param.baseId);
 
     this.appHooksService.emit(AppEvents.PROJECT_DELETE, {
       base,
@@ -125,7 +138,10 @@ export class BasesService {
     return true;
   }
 
-  async baseCreate(param: { base: ProjectReqType; user: any; req: NcRequest }) {
+  async baseCreate(
+    context: NcContext,
+    param: { base: ProjectReqType; user: any; req: NcRequest },
+  ) {
     validatePayload('swagger.json#/components/schemas/ProjectReq', param.base);
 
     const baseId = await this.metaService.genNanoid(MetaTable.PROJECT);
@@ -196,10 +212,10 @@ export class BasesService {
     baseBody.title = DOMPurify.sanitize(baseBody.title);
     baseBody.slug = baseBody.title;
 
-    const base = await Base.createProject(baseBody);
+    const base = await Base.createProject(context, baseBody);
 
     // TODO: create n:m instances here
-    await BaseUser.insert({
+    await BaseUser.insert(context, {
       fk_user_id: (param as any).user.id,
       base_id: base.id,
       roles: 'owner',
@@ -210,7 +226,7 @@ export class BasesService {
     // populate metadata if existing table
     for (const source of await base.getSources()) {
       if (process.env.NC_CLOUD !== 'true' && !base.is_meta) {
-        const info = await populateMeta(source, base);
+        const info = await populateMeta(context, source, base);
 
         this.appHooksService.emit(AppEvents.APIS_CREATED, {
           info,
@@ -231,8 +247,11 @@ export class BasesService {
     return base;
   }
 
-  async createDefaultBase(param: { user: UserType; req: NcRequest }) {
-    const base = await this.baseCreate({
+  async createDefaultBase(
+    context: NcContext,
+    param: { user: UserType; req: NcRequest },
+  ) {
+    const base = await this.baseCreate(context, {
       base: {
         title: 'Getting Started',
         type: 'database',
@@ -244,7 +263,7 @@ export class BasesService {
     const sqlUI = SqlUiFactory.create({ client: base.sources[0].type });
     const columns = sqlUI?.getNewTableColumns() as any;
 
-    const table = await this.tablesService.tableCreate({
+    const table = await this.tablesService.tableCreate(context, {
       baseId: base.id,
       sourceId: base.sources[0].id,
       table: {

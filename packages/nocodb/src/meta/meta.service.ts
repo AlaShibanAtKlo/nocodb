@@ -537,7 +537,9 @@ export class MetaService {
   ): Promise<number> {
     const query = this.knexConnection(target);
 
-    if (workspace_id === base_id) {
+    if (workspace_id === RootScopes.BYPASS && base_id === RootScopes.BYPASS) {
+      // bypass
+    } else if (workspace_id === base_id) {
       if (!Object.values(RootScopes).includes(workspace_id as RootScopes)) {
         NcError.metaError({
           message: 'Invalid scope',
@@ -561,39 +563,6 @@ export class MetaService {
 
       this.contextCondition(query, workspace_id, base_id, target);
     }
-
-    if (args?.condition) {
-      query.where(args.condition);
-    }
-
-    if (args?.xcCondition) {
-      (query as any).condition(args.xcCondition);
-    }
-
-    query.count(args?.aggField || 'id', { as: 'count' }).first();
-
-    return +(await query)?.['count'] || 0;
-  }
-
-  /***
-   * Get count of meta data
-   * @param base_id - Base id
-   * @param dbAlias - Database alias
-   * @param target - Table name
-   * @param args.condition - Condition to be applied
-   * @param args.xcCondition - Additional nested or complex condition to be added to the query.
-   * @param args.aggField - Field to be aggregated
-   * @returns {Promise<number>} - Count of records
-   * */
-  public async metaCountAll(
-    target: string,
-    args?: {
-      condition?: { [p: string]: any };
-      xcCondition?: Condition;
-      aggField?: string;
-    },
-  ): Promise<number> {
-    const query = this.knexConnection(target);
 
     if (args?.condition) {
       query.where(args.condition);

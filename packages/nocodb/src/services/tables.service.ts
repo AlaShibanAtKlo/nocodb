@@ -202,7 +202,7 @@ export class TablesService {
       // get relation column names
       const relColumns = await Promise.all(
         tables.map((t) => {
-          return t.getColumns().then((cols) => {
+          return t.getColumns(context).then((cols) => {
             return cols.find((c) => {
               return (
                 isLinksOrLTAR(c) &&

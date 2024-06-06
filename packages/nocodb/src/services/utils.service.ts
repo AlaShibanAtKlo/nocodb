@@ -241,138 +241,97 @@ export class UtilsService {
             ] = this.extractResultOrNull(
               await Promise.allSettled([
                 // db tables  count
-                Noco.ncMeta.metaCountAll(MetaTable.MODELS, {
-                  condition: {
-                    type: 'table',
+                Noco.ncMeta.metaCount(
+                  base.fk_workspace_id,
+                  base.id,
+                  MetaTable.MODELS,
+                  {
+                    condition: {
+                      type: 'table',
+                    },
                   },
-                }),
+                ),
                 // db views count
-                Noco.ncMeta.metaCountAll(MetaTable.MODELS, {
-                  condition: {
-                    type: 'view',
+                Noco.ncMeta.metaCount(
+                  base.fk_workspace_id,
+                  base.id,
+                  MetaTable.MODELS,
+                  {
+                    condition: {
+                      type: 'view',
+                    },
                   },
-                }),
+                ),
                 // views count
                 (async () => {
-                  const gridCount = await Noco.ncMeta.metaCountAll(
+                  const views = await Noco.ncMeta.metaList2(
+                    base.fk_workspace_id,
+                    base.id,
                     MetaTable.VIEWS,
+                  );
+                  // grid, form, gallery, kanban and shared count
+                  return (views as any[]).reduce<ViewCount>(
+                    (out, view) => {
+                      out.total++;
+
+                      switch (view.type) {
+                        case ViewTypes.GRID:
+                          out.gridCount++;
+                          if (view.uuid) out.sharedGridCount++;
+                          break;
+                        case ViewTypes.FORM:
+                          out.formCount++;
+                          if (view.uuid) out.sharedFormCount++;
+                          break;
+                        case ViewTypes.GALLERY:
+                          out.galleryCount++;
+                          if (view.uuid) out.sharedGalleryCount++;
+                          break;
+                        case ViewTypes.KANBAN:
+                          out.kanbanCount++;
+                          if (view.uuid) out.sharedKanbanCount++;
+                      }
+
+                      if (view.uuid) {
+                        if (view.password) out.sharedLockedCount++;
+                        out.sharedTotal++;
+                      }
+
+                      return out;
+                    },
                     {
-                      condition: {
-                        type: ViewTypes.GRID,
-                      },
+                      formCount: 0,
+                      gridCount: 0,
+                      galleryCount: 0,
+                      kanbanCount: 0,
+                      total: 0,
+                      sharedFormCount: 0,
+                      sharedGridCount: 0,
+                      sharedGalleryCount: 0,
+                      sharedKanbanCount: 0,
+                      sharedTotal: 0,
+                      sharedLockedCount: 0,
                     },
                   );
-
-                  const formCount = await Noco.ncMeta.metaCountAll(
-                    MetaTable.VIEWS,
-                    {
-                      condition: {
-                        type: ViewTypes.FORM,
-                      },
-                    },
-                  );
-
-                  const galleryCount = await Noco.ncMeta.metaCountAll(
-                    MetaTable.VIEWS,
-                    {
-                      condition: {
-                        type: ViewTypes.GALLERY,
-                      },
-                    },
-                  );
-
-                  const kanbanCount = await Noco.ncMeta.metaCountAll(
-                    MetaTable.VIEWS,
-                    {
-                      condition: {
-                        type: ViewTypes.KANBAN,
-                      },
-                    },
-                  );
-
-                  const viewCount = await Noco.ncMeta.metaCountAll(
-                    MetaTable.VIEWS,
-                  );
-
-                  const sharedGridCount = await Noco.ncMeta.metaCountAll(
-                    MetaTable.VIEWS,
-                    {
-                      condition: {
-                        type: ViewTypes.GRID,
-                        uuid: { $ne: null },
-                      },
-                    },
-                  );
-
-                  const sharedFormCount = await Noco.ncMeta.metaCountAll(
-                    MetaTable.VIEWS,
-                    {
-                      condition: {
-                        type: ViewTypes.FORM,
-                        uuid: { $ne: null },
-                      },
-                    },
-                  );
-
-                  const sharedGalleryCount = await Noco.ncMeta.metaCountAll(
-                    MetaTable.VIEWS,
-                    {
-                      condition: {
-                        type: ViewTypes.GALLERY,
-                        uuid: { $ne: null },
-                      },
-                    },
-                  );
-
-                  const sharedKanbanCount = await Noco.ncMeta.metaCountAll(
-                    MetaTable.VIEWS,
-                    {
-                      condition: {
-                        type: ViewTypes.KANBAN,
-                        uuid: { $ne: null },
-                      },
-                    },
-                  );
-
-                  const sharedTotal = await Noco.ncMeta.metaCountAll(
-                    MetaTable.VIEWS,
-                    {
-                      condition: {
-                        uuid: { $ne: null },
-                      },
-                    },
-                  );
-
-                  const sharedLockedCount = await Noco.ncMeta.metaCountAll(
-                    MetaTable.VIEWS,
-                    {
-                      condition: {
-                        password: { $ne: null },
-                      },
-                    },
-                  );
-
-                  return {
-                    gridCount,
-                    formCount,
-                    galleryCount,
-                    kanbanCount,
-                    viewCount,
-                    total: viewCount,
-                    sharedGridCount,
-                    sharedFormCount,
-                    sharedGalleryCount,
-                    sharedKanbanCount,
-                    sharedTotal,
-                    sharedLockedCount,
-                  };
                 })(),
                 // webhooks count
-                Noco.ncMeta.metaCountAll(MetaTable.HOOKS),
+                Noco.ncMeta.metaCount(
+                  base.fk_workspace_id,
+                  base.id,
+                  MetaTable.HOOKS,
+                ),
                 // filters count
-                Noco.ncMeta.metaCountAll(MetaTable.FILTER_EXP),
+                Noco.ncMeta.metaCount(
+                  base.fk_workspace_id,
+                  base.id,
+                  MetaTable.FILTER_EXP,
+                ),
                 // sorts count
-                Noco.ncMeta.metaCountAll(MetaTable.SORT),
+                Noco.ncMeta.metaCount(
+                  base.fk_workspace_id,
+                  base.id,
+                  MetaTable.SORT,
+                ),
                 // row count per base
                 base.getSources().then(async (sources) => {
                   return this.extractResultOrNull(
@@ -386,12 +345,17 @@ export class UtilsService {
                   );
                 }),
                 // base users count
-                Noco.ncMeta.metaCountAll(MetaTable.PROJECT_USERS, {
-                  condition: {
-                    base_id: base.id,
+                Noco.ncMeta.metaCount(
+                  base.fk_workspace_id,
+                  base.id,
+                  MetaTable.PROJECT_USERS,
+                  {
+                    condition: {
+                      base_id: base.id,
+                    },
+                    aggField: '*',
                   },
-                  aggField: '*',
-                }),
+                ),
               ]),
             );
 

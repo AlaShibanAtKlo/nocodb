@@ -303,7 +303,7 @@ export class ImportService {
                   }
                 }
 
-                const childModel =
+                const childModel: Model =
                   getParentIdentifier(colOptions.fk_parent_column_id) ===
                   modelData.id
                     ? freshModelData
@@ -318,7 +318,7 @@ export class ImportService {
                   getParentIdentifier(colOptions.fk_parent_column_id) !==
                   modelData.id
                 )
-                  await childModel.getColumns();
+                  await childModel.getColumns(context);
 
                 const childColumn = param.data
                   .find(
@@ -411,7 +411,7 @@ export class ImportService {
                 }
               }
 
-              const childModel =
+              const childModel: Model =
                 colOptions.fk_related_model_id === modelData.id
                   ? freshModelData
                   : await Model.get(
@@ -420,7 +420,7 @@ export class ImportService {
                     );
 
               if (colOptions.fk_related_model_id !== modelData.id)
-                await childModel.getColumns();
+                await childModel.getColumns(context);
 
               const childColumn = param.data
                 .find((a) => a.model.id === colOptions.fk_related_model_id)
@@ -549,7 +549,7 @@ export class ImportService {
                   }
                 }
 
-                const childModel =
+                const childModel: Model =
                   getParentIdentifier(colOptions.fk_parent_column_id) ===
                   modelData.id
                     ? freshModelData
@@ -564,7 +564,7 @@ export class ImportService {
                   getParentIdentifier(colOptions.fk_parent_column_id) !==
                   modelData.id
                 )
-                  await childModel.getColumns();
+                  await childModel.getColumns(context);
 
                 const childColumn = (
                   param.data.find(
@@ -685,7 +685,7 @@ export class ImportService {
                   }
                 }
 
-                const childModel =
+                const childModel: Model =
                   colOptions.fk_related_model_id === modelData.id
                     ? freshModelData
                     : await Model.get(
@@ -694,7 +694,7 @@ export class ImportService {
                       );
 
                 if (colOptions.fk_related_model_id !== modelData.id)
-                  await childModel.getColumns();
+                  await childModel.getColumns(context);
 
                 const childColumn = (
                   param.data.find(
@@ -859,7 +859,7 @@ export class ImportService {
                   }
                 }
 
-                const childModel =
+                const childModel: Model =
                   colOptions.fk_related_model_id === modelData.id
                     ? freshModelData
                     : await Model.get(
@@ -868,7 +868,7 @@ export class ImportService {
                       );
 
                 if (colOptions.fk_related_model_id !== modelData.id)
-                  await childModel.getColumns();
+                  await childModel.getColumns(context);
 
                 const childColumn = (
                   param.data.find(

@@ -785,8 +785,8 @@ function tableTest() {
     base = await createProject(context);
 
     ctx = {
-      workspace_id: base.fk_workspace_id,
-      base_id: base.id,
+      workspace_id: sakilaProject.fk_workspace_id,
+      base_id: sakilaProject.id,
     };
 
     customerTable = await getTable({

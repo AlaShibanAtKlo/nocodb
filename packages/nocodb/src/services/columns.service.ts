@@ -1497,7 +1497,7 @@ export class ColumnsService {
     );
 
     const base = await reuseOrSave('base', reuse, async () =>
-      source.getProject(),
+      source.getProject(context),
     );
 
     if (param.column.title || param.column.column_name) {
@@ -2004,7 +2004,7 @@ export class ColumnsService {
         break;
     }
 
-    await table.getColumns();
+    await table.getColumns(context);
 
     this.appHooksService.emit(AppEvents.COLUMN_CREATE, {
       table,

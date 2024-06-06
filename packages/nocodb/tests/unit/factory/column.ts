@@ -184,6 +184,11 @@ const customColumns = function (type: string, options: any = {}) {
 };
 
 const createColumn = async (context, table, columnAttr) => {
+  const ctx = {
+    workspace_id: table.fk_workspace_id,
+    base_id: table.base_id,
+  };
+
   await request(context.app)
     .post(`/api/v1/db/meta/tables/${table.id}/columns`)
     .set('xc-auth', context.token)
@@ -191,7 +196,7 @@ const createColumn = async (context, table, columnAttr) => {
       ...columnAttr,
     });
 
-  const column: Column = (await table.getColumns()).find(
+  const column: Column = (await table.getColumns(ctx)).find(
     (column) => column.title === columnAttr.title,
   );
   return column;

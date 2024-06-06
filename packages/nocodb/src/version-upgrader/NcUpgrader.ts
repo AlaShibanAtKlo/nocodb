@@ -66,8 +66,8 @@ export default class NcUpgrader {
               // update version in meta after each upgrade
               config.version = version.name;
               await ctx.ncMeta.metaUpdate(
-                '',
-                '',
+                RootScopes.ROOT,
+                RootScopes.ROOT,
                 'nc_store',
                 {
                   value: JSON.stringify({ version: config.version }),

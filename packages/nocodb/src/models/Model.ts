@@ -689,8 +689,8 @@ export default class Model implements TableType {
 
     // set meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      oldModel.fk_workspace_id,
+      oldModel.base_id,
       MetaTable.MODELS,
       {
         title,
@@ -734,10 +734,12 @@ export default class Model implements TableType {
   }
 
   static async markAsMmTable(tableId, isMm = true, ncMeta = Noco.ncMeta) {
+    const existingModel = await this.get(tableId, ncMeta);
+
     // set meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      existingModel.fk_workspace_id,
+      existingModel.base_id,
       MetaTable.MODELS,
       {
         mm: isMm,
@@ -775,10 +777,12 @@ export default class Model implements TableType {
     order: number,
     ncMeta = Noco.ncMeta,
   ) {
+    const existingModel = await this.get(tableId, ncMeta);
+
     // set meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      existingModel.fk_workspace_id,
+      existingModel.base_id,
       MetaTable.MODELS,
       {
         order,
@@ -807,8 +811,8 @@ export default class Model implements TableType {
     for (const col of model.columns?.filter((c) => c.pv) || []) {
       // set meta
       await ncMeta.metaUpdate(
-        null,
-        null,
+        model.fk_workspace_id,
+        model.base_id,
         MetaTable.COLUMNS,
         {
           pv: false,
@@ -823,8 +827,8 @@ export default class Model implements TableType {
 
     // set meta
     await ncMeta.metaUpdate(
-      null,
-      null,
+      model.fk_workspace_id,
+      model.base_id,
       MetaTable.COLUMNS,
       {
         pv: true,
@@ -875,10 +879,12 @@ export default class Model implements TableType {
   }
 
   static async setAsMm(id: any, ncMeta = Noco.ncMeta) {
+    const existingModel = await this.get(id, ncMeta);
+
     // set meta
     await ncMeta.metaUpdate(
-      null,
-      null,
+      existingModel.fk_workspace_id,
+      existingModel.base_id,
       MetaTable.MODELS,
       {
         mm: true,
@@ -1018,10 +1024,12 @@ export default class Model implements TableType {
     meta: string | Record<string, any>,
     ncMeta = Noco.ncMeta,
   ) {
+    const existingModel = await this.get(tableId, ncMeta);
+
     // set meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      existingModel.fk_workspace_id,
+      existingModel.base_id,
       MetaTable.MODELS,
       prepareForDb({
         meta,

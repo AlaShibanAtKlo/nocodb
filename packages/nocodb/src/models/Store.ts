@@ -65,9 +65,15 @@ export default class Store {
 
     const existing = await Store.get(store.key, false, ncMeta);
     if (existing) {
-      await ncMeta.metaUpdate(null, null, MetaTable.STORE, insertObj, {
-        key: store.key,
-      });
+      await ncMeta.metaUpdate(
+        RootScopes.ROOT,
+        RootScopes.ROOT,
+        MetaTable.STORE,
+        insertObj,
+        {
+          key: store.key,
+        },
+      );
     } else {
       await ncMeta.metaInsert2(
         RootScopes.ROOT,

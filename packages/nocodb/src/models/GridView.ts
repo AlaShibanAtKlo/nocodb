@@ -76,12 +76,14 @@ export default class GridView implements GridType {
     body: Partial<GridView>,
     ncMeta = Noco.ncMeta,
   ) {
+    const gridView = await this.get(viewId, ncMeta);
+
     const updateObj = extractProps(body, ['row_height', 'meta']);
 
     // update meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      gridView.fk_workspace_id,
+      gridView.base_id,
       MetaTable.GRID_VIEW,
       prepareForDb(updateObj),
       {

@@ -120,12 +120,14 @@ export default class KanbanViewColumn implements KanbanColumnType {
     body: Partial<KanbanViewColumn>,
     ncMeta = Noco.ncMeta,
   ) {
+    const viewCol = await this.get(columnId, ncMeta);
+
     const updateObj = extractProps(body, ['order', 'show']);
 
     // set meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      viewCol.fk_workspace_id,
+      viewCol.base_id,
       MetaTable.KANBAN_VIEW_COLUMNS,
       updateObj,
       columnId,

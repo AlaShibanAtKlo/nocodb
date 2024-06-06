@@ -77,6 +77,8 @@ export default class MapView implements MapType {
     body: Partial<MapView>,
     ncMeta = Noco.ncMeta,
   ) {
+    const existingView = await this.get(mapId, ncMeta);
+
     const updateObj = extractProps(body, ['fk_geo_data_col_id', 'meta']);
 
     if (body.fk_geo_data_col_id != null) {
@@ -92,8 +94,8 @@ export default class MapView implements MapType {
 
     // update meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      existingView.fk_workspace_id,
+      existingView.fk_view_id,
       MetaTable.MAP_VIEW,
       prepareForDb(updateObj),
       {

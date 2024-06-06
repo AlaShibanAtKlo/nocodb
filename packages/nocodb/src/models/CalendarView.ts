@@ -113,8 +113,8 @@ export default class CalendarView implements CalendarType {
 
     // update meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      calendar.fk_workspace_id,
+      calendar.base_id,
       MetaTable.CALENDAR_VIEW,
       prepareForDb(updateObj),
       {

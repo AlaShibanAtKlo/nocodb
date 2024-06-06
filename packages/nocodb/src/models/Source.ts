@@ -114,9 +114,9 @@ export default class Source implements SourceType {
     },
     ncMeta = Noco.ncMeta,
   ) {
-    const oldBase = await Source.get(sourceId, false, ncMeta);
+    const oldSource = await Source.get(sourceId, false, ncMeta);
 
-    if (!oldBase) NcError.sourceNotFound(sourceId);
+    if (!oldSource) NcError.sourceNotFound(sourceId);
 
     const updateObj = extractProps(source, [
       'alias',
@@ -141,33 +141,33 @@ export default class Source implements SourceType {
 
     // type property is undefined even if not provided
     if (!updateObj.type) {
-      updateObj.type = oldBase.type;
+      updateObj.type = oldSource.type;
     }
 
     // if order is missing (possible in old versions), get next order
-    if (!oldBase.order && !updateObj.order) {
+    if (!oldSource.order && !updateObj.order) {
       updateObj.order = await ncMeta.metaGetNextOrder(MetaTable.BASES, {
         base_id: source.baseId,
       });
 
-      if (updateObj.order <= 1 && !oldBase.isMeta()) {
+      if (updateObj.order <= 1 && !oldSource.isMeta()) {
         updateObj.order = 2;
       }
     }
 
     // keep order 1 for default source
-    if (oldBase.isMeta()) {
+    if (oldSource.isMeta()) {
       updateObj.order = 1;
     }
 
     // keep order 1 for default source
-    if (!oldBase.isMeta()) {
+    if (!oldSource.isMeta()) {
       if (updateObj.order <= 1) {
         NcError.badRequest('Cannot change order to 1 or less');
       }
 
       // if order is 1 for non-default source, move it to last
-      if (oldBase.order <= 1 && !updateObj.order) {
+      if (oldSource.order <= 1 && !updateObj.order) {
         updateObj.order = await ncMeta.metaGetNextOrder(MetaTable.BASES, {
           base_id: source.baseId,
         });
@@ -175,11 +175,11 @@ export default class Source implements SourceType {
     }
 
     await ncMeta.metaUpdate(
-      source.baseId,
-      null,
+      oldSource.fk_workspace_id,
+      oldSource.base_id,
       MetaTable.BASES,
       prepareForDb(updateObj),
-      oldBase.id,
+      oldSource.id,
     );
 
     await NocoCache.update(
@@ -193,7 +193,7 @@ export default class Source implements SourceType {
     }
 
     // call before reorder to update cache
-    const returnBase = await this.get(oldBase.id, false, ncMeta);
+    const returnBase = await this.get(oldSource.id, false, ncMeta);
 
     return returnBase;
   }
@@ -471,8 +471,8 @@ export default class Source implements SourceType {
     }
 
     await ncMeta.metaUpdate(
+      this.fk_workspace_id,
       this.base_id,
-      null,
       MetaTable.BASES,
       {
         deleted: true,
@@ -500,8 +500,8 @@ export default class Source implements SourceType {
 
       // set meta
       await ncMeta.metaUpdate(
-        null,
-        null,
+        this.fk_workspace_id,
+        this.base_id,
         MetaTable.BASES,
         {
           erd_uuid: this.erd_uuid,
@@ -522,8 +522,8 @@ export default class Source implements SourceType {
 
       // set meta
       await ncMeta.metaUpdate(
-        null,
-        null,
+        this.fk_workspace_id,
+        this.base_id,
         MetaTable.BASES,
         {
           erd_uuid: this.erd_uuid,

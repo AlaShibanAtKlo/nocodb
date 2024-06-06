@@ -98,11 +98,13 @@ export default class Comment implements CommentType {
     comment: Partial<Comment>,
     ncMeta = Noco.ncMeta,
   ) {
+    const existingComment = await Comment.get(commentId, ncMeta);
+
     const updateObj = extractProps(comment, ['comment', 'resolved_by']);
 
     await ncMeta.metaUpdate(
-      null,
-      null,
+      existingComment.fk_workspace_id,
+      existingComment.base_id,
       MetaTable.COMMENTS,
       prepareForDb(updateObj),
       commentId,
@@ -112,9 +114,11 @@ export default class Comment implements CommentType {
   }
 
   static async delete(commentId: string, ncMeta = Noco.ncMeta) {
+    const comment = await Comment.get(commentId, ncMeta);
+
     await ncMeta.metaUpdate(
-      null,
-      null,
+      comment.fk_workspace_id,
+      comment.base_id,
       MetaTable.COMMENTS,
       { is_deleted: true },
       commentId,
@@ -124,9 +128,11 @@ export default class Comment implements CommentType {
   }
 
   static async deleteRowComments(fk_model_id: string, ncMeta = Noco.ncMeta) {
+    const model = await Model.getByIdOrName({ id: fk_model_id }, ncMeta);
+
     return ncMeta.metaUpdate(
-      null,
-      null,
+      model.fk_workspace_id,
+      model.base_id,
       MetaTable.COMMENTS,
       {
         is_deleted: true,

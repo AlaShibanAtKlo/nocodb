@@ -100,8 +100,8 @@ async function upgradeModelRelations({
 
     // update the relation as virtual
     await ncMeta.metaUpdate(
-      null,
-      null,
+      column.fk_workspace_id,
+      column.base_id,
       MetaTable.COL_RELATIONS,
       { virtual: true },
       colOptions.id,

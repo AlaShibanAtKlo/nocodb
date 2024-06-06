@@ -2,7 +2,12 @@ import type { PluginType } from 'nocodb-sdk';
 import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
 import { extractProps } from '~/helpers/extractProps';
-import { CacheGetType, CacheScope, MetaTable } from '~/utils/globals';
+import {
+  CacheGetType,
+  CacheScope,
+  MetaTable,
+  RootScopes,
+} from '~/utils/globals';
 
 export default class Plugin implements PluginType {
   id?: string;
@@ -67,8 +72,8 @@ export default class Plugin implements PluginType {
 
     // set meta
     await Noco.ncMeta.metaUpdate(
-      null,
-      null,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.PLUGIN,
       updateObj,
       pluginId,

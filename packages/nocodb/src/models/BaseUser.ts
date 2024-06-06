@@ -271,10 +271,12 @@ export default class BaseUser {
     roles: string,
     ncMeta = Noco.ncMeta,
   ) {
+    const base = await Base.get(baseId, ncMeta);
+
     // set meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      base.fk_workspace_id,
+      base.id,
       MetaTable.PROJECT_USERS,
       {
         roles,
@@ -298,13 +300,21 @@ export default class BaseUser {
     baseUser: Partial<BaseUser>,
     ncMeta = Noco.ncMeta,
   ) {
+    const base = await Base.get(baseId, ncMeta);
+
     const updateObj = extractProps(baseUser, ['starred', 'hidden', 'order']);
 
     // set meta
-    await ncMeta.metaUpdate(null, null, MetaTable.PROJECT_USERS, updateObj, {
-      fk_user_id: userId,
-      base_id: baseId,
-    });
+    await ncMeta.metaUpdate(
+      base.fk_workspace_id,
+      base.id,
+      MetaTable.PROJECT_USERS,
+      updateObj,
+      {
+        fk_user_id: userId,
+        base_id: baseId,
+      },
+    );
 
     await NocoCache.update(
       `${CacheScope.BASE_USER}:${baseId}:${userId}`,

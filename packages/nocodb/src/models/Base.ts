@@ -252,8 +252,8 @@ export default class Base implements BaseType {
 
     // set meta
     return await ncMeta.metaUpdate(
-      null,
-      null,
+      RootScopes.BASE,
+      RootScopes.BASE,
       MetaTable.PROJECT,
       { deleted: true },
       baseId,
@@ -320,8 +320,8 @@ export default class Base implements BaseType {
 
     // set meta
     return await ncMeta.metaUpdate(
-      null,
-      null,
+      RootScopes.BASE,
+      RootScopes.BASE,
       MetaTable.PROJECT,
       updateObj,
       baseId,

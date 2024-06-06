@@ -127,6 +127,8 @@ export default class FormView implements FormViewType {
     body: Partial<FormView>,
     ncMeta = Noco.ncMeta,
   ) {
+    const form = await this.get(formId, ncMeta);
+
     const updateObj = extractProps(body, [
       'heading',
       'subheading',
@@ -153,8 +155,8 @@ export default class FormView implements FormViewType {
 
     // update meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      form.fk_workspace_id,
+      form.base_id,
       MetaTable.FORM_VIEW,
       prepareForDb(updateObj),
       {

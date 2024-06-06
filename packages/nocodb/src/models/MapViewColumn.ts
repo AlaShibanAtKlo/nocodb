@@ -110,6 +110,8 @@ export default class MapViewColumn {
     body: Partial<MapViewColumn>,
     ncMeta = Noco.ncMeta,
   ) {
+    const viewCol = await this.get(columnId, ncMeta);
+
     const updateObj = extractProps(body, [
       'order',
       'show',
@@ -121,8 +123,8 @@ export default class MapViewColumn {
 
     // set meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      viewCol.fk_workspace_id,
+      viewCol.base_id,
       MetaTable.MAP_VIEW_COLUMNS,
       updateObj,
       columnId,

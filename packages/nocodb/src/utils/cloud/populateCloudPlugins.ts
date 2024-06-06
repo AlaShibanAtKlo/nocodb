@@ -1,7 +1,7 @@
 import S3PluginConfig from '../../plugins/s3';
 import SESPluginConfig from '../../plugins/ses';
-import { MetaTable } from '../globals';
 import Noco from '~/Noco';
+import { MetaTable, RootScopes } from '~/utils/globals';
 
 export const populatePluginsForCloud = async ({ ncMeta = Noco.ncMeta }) => {
   if (
@@ -36,8 +36,8 @@ export const populatePluginsForCloud = async ({ ncMeta = Noco.ncMeta }) => {
 
   if (isS3PluginUpdateNeeded) {
     await ncMeta.metaUpdate(
-      null,
-      null,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.PLUGIN,
       {
         input: JSON.stringify(s3PluginFromEnv),
@@ -80,8 +80,8 @@ export const populatePluginsForCloud = async ({ ncMeta = Noco.ncMeta }) => {
 
   if (isSESPluginUpdateNeeded) {
     await ncMeta.metaUpdate(
-      null,
-      null,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.PLUGIN,
       {
         input: JSON.stringify(sesPluginFromEnv),

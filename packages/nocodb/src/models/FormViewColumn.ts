@@ -157,6 +157,8 @@ export default class FormViewColumn implements FormColumnType {
     body: Partial<FormViewColumn>,
     ncMeta = Noco.ncMeta,
   ) {
+    const viewColumn = await this.get(columnId, ncMeta);
+
     const updateObj = extractProps(body, [
       'label',
       'help',
@@ -170,8 +172,8 @@ export default class FormViewColumn implements FormColumnType {
 
     // update meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      viewColumn.fk_workspace_id,
+      viewColumn.base_id,
       MetaTable.FORM_VIEW_COLUMNS,
       prepareForDb(updateObj),
       columnId,

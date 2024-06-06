@@ -159,6 +159,8 @@ export default class Hook implements HookType {
     hook: Partial<Hook>,
     ncMeta = Noco.ncMeta,
   ) {
+    const existingHook = await this.get(hookId, ncMeta);
+
     const updateObj = extractProps(hook, [
       'title',
       'description',
@@ -193,7 +195,13 @@ export default class Hook implements HookType {
     }
 
     // set meta
-    await ncMeta.metaUpdate(null, null, MetaTable.HOOKS, updateObj, hookId);
+    await ncMeta.metaUpdate(
+      existingHook.fk_workspace_id,
+      existingHook.base_id,
+      MetaTable.HOOKS,
+      updateObj,
+      hookId,
+    );
 
     await NocoCache.update(`${CacheScope.HOOK}:${hookId}`, updateObj);
 

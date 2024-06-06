@@ -1124,8 +1124,8 @@ export default class Column<T = any> implements ColumnType {
 
     // set meta
     await ncMeta.metaUpdate(
-      null,
-      null,
+      oldCol.fk_workspace_id,
+      oldCol.base_id,
       MetaTable.COLUMNS,
       prepareForDb(updateObj),
       colId,
@@ -1178,10 +1178,12 @@ export default class Column<T = any> implements ColumnType {
     { title }: { title: string },
     ncMeta = Noco.ncMeta,
   ) {
+    const column = await Column.get({ colId }, ncMeta);
+
     // set meta
     await ncMeta.metaUpdate(
-      null, //column.base_id || column.source_id,
-      null, //column.db_alias,
+      column.fk_workspace_id,
+      column.base_id,
       MetaTable.COLUMNS,
       {
         title,
@@ -1190,8 +1192,6 @@ export default class Column<T = any> implements ColumnType {
     );
 
     await NocoCache.update(`${CacheScope.COLUMN}:${colId}`, { title });
-
-    const column = await Column.get({ colId }, ncMeta);
 
     await View.clearSingleQueryCache(column.fk_model_id, null, ncMeta);
   }
@@ -1251,10 +1251,12 @@ export default class Column<T = any> implements ColumnType {
     system = true,
     ncMeta = Noco.ncMeta,
   ) {
+    const column = await Column.get({ colId }, ncMeta);
+
     // update system field in meta db
     await ncMeta.metaUpdate(
-      null,
-      null,
+      column.fk_workspace_id,
+      column.base_id,
       MetaTable.COLUMNS,
       {
         system,
@@ -1282,10 +1284,12 @@ export default class Column<T = any> implements ColumnType {
     { colId, meta }: { colId: string; meta: any },
     ncMeta = Noco.ncMeta,
   ) {
+    const column = await Column.get({ colId }, ncMeta);
+
     // set meta
     await ncMeta.metaUpdate(
-      null,
-      null,
+      column.fk_workspace_id,
+      column.base_id,
       MetaTable.COLUMNS,
       prepareForDb({ meta }),
       colId,

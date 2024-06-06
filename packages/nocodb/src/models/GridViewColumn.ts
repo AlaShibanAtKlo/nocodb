@@ -133,6 +133,8 @@ export default class GridViewColumn implements GridColumnType {
     body: Partial<GridViewColumn>,
     ncMeta = Noco.ncMeta,
   ) {
+    const viewColumn = await this.get(columnId, ncMeta);
+
     const updateObj = extractProps(body, [
       'order',
       'show',
@@ -144,8 +146,8 @@ export default class GridViewColumn implements GridColumnType {
 
     // set meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      viewColumn.fk_workspace_id,
+      viewColumn.base_id,
       MetaTable.GRID_VIEW_COLUMNS,
       updateObj,
       columnId,

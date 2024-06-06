@@ -120,8 +120,9 @@ export default class Extension {
     extension: Partial<Extension>,
     ncMeta = Noco.ncMeta,
   ) {
+    const existingExt = await this.get(extensionId, ncMeta);
+
     const updateObj = extractProps(extension, [
-      'base_id',
       'fk_user_id',
       'extension_id',
       'title',
@@ -132,8 +133,8 @@ export default class Extension {
 
     // set meta
     await ncMeta.metaUpdate(
-      null,
-      null,
+      existingExt.fk_workspace_id,
+      existingExt.base_id,
       MetaTable.EXTENSIONS,
       prepareForDb(updateObj, ['kv_store', 'meta']),
       extensionId,

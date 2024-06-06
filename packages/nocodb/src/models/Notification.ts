@@ -117,8 +117,8 @@ export default class Notification {
     }
 
     return await ncMeta.metaUpdate(
-      null,
-      null,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.NOTIFICATION,
       updateData,
       id,
@@ -127,8 +127,8 @@ export default class Notification {
 
   public static async markAllAsRead(fk_user_id: string, ncMeta = Noco.ncMeta) {
     return ncMeta.metaUpdate(
-      null,
-      null,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.NOTIFICATION,
       { is_read: true },
       {

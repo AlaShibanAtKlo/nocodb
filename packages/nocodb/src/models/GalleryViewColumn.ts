@@ -128,12 +128,14 @@ export default class GalleryViewColumn {
     body: Partial<GalleryViewColumn>,
     ncMeta = Noco.ncMeta,
   ) {
+    const viewColumn = await this.get(columnId, ncMeta);
+
     const updateObj = extractProps(body, ['order', 'show']);
 
     // set meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      viewColumn.fk_workspace_id,
+      viewColumn.base_id,
       MetaTable.GALLERY_VIEW_COLUMNS,
       updateObj,
       columnId,

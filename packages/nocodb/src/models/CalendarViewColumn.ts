@@ -150,6 +150,8 @@ export default class CalendarViewColumn {
     body: Partial<CalendarViewColumn>,
     ncMeta = Noco.ncMeta,
   ) {
+    const viewCol = await this.get(columnId, ncMeta);
+
     const updateObj = extractProps(body, [
       'show',
       'order',
@@ -160,8 +162,8 @@ export default class CalendarViewColumn {
 
     // update meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      viewCol.fk_workspace_id,
+      viewCol.base_id,
       MetaTable.CALENDAR_VIEW_COLUMNS,
       updateObj,
       columnId,

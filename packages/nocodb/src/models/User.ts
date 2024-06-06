@@ -121,7 +121,13 @@ export default class User implements UserType {
     // delete the email-based cache to avoid unexpected behaviour since we can update email as well
     await NocoCache.del(`${CacheScope.USER}:${existingUser.email}`);
 
-    await ncMeta.metaUpdate(null, null, MetaTable.USERS, updateObj, id);
+    await ncMeta.metaUpdate(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.USERS,
+      updateObj,
+      id,
+    );
 
     // clear all user related cache
     await this.clearCache(id, ncMeta);

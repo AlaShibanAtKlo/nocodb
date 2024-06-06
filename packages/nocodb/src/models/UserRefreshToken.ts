@@ -75,8 +75,8 @@ export default class UserRefreshToken {
     ncMeta = Noco.ncMeta,
   ) {
     return await ncMeta.metaUpdate(
-      null,
-      null,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.USER_REFRESH_TOKENS,
       {
         token: newToken,

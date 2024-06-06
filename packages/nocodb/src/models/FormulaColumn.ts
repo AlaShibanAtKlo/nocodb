@@ -86,6 +86,8 @@ export default class FormulaColumn {
     formula: Partial<FormulaColumn> & { parsed_tree?: any },
     ncMeta = Noco.ncMeta,
   ) {
+    const formulaColumn = await this.read(columnId, ncMeta);
+
     const updateObj = extractProps(formula, [
       'formula',
       'formula_raw',
@@ -97,9 +99,15 @@ export default class FormulaColumn {
     if ('parsed_tree' in updateObj)
       updateObj.parsed_tree = stringifyMetaProp(updateObj, 'parsed_tree');
     // set meta
-    await ncMeta.metaUpdate(null, null, MetaTable.COL_FORMULA, updateObj, {
-      fk_column_id: columnId,
-    });
+    await ncMeta.metaUpdate(
+      formulaColumn.fk_workspace_id,
+      formulaColumn.base_id,
+      MetaTable.COL_FORMULA,
+      updateObj,
+      {
+        fk_column_id: columnId,
+      },
+    );
 
     await NocoCache.update(`${CacheScope.COL_FORMULA}:${columnId}`, updateObj);
   }

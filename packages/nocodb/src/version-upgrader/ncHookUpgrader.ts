@@ -7,8 +7,8 @@ export default async function ({ ncMeta }: NcUpgraderCtx) {
   for (const hook of hooks) {
     actions.push(
       ncMeta.metaUpdate(
-        null,
-        null,
+        hook.fk_workspace_id,
+        hook.base_id,
         MetaTable.HOOKS,
         { version: 'v1' },
         hook.id,

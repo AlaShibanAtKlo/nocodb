@@ -100,12 +100,14 @@ export default class GalleryView implements GalleryType {
     body: Partial<GalleryView>,
     ncMeta = Noco.ncMeta,
   ) {
+    const existingView = await this.get(galleryId, ncMeta);
+
     const updateObj = extractProps(body, ['fk_cover_image_col_id', 'meta']);
 
     // update meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      existingView.fk_workspace_id,
+      existingView.base_id,
       MetaTable.GALLERY_VIEW,
       prepareForDb(updateObj),
       {

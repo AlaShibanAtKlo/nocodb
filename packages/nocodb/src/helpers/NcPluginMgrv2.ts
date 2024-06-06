@@ -88,8 +88,8 @@ class NcPluginMgrv2 {
         );
       } else if (pluginConfig.version !== plugin.version) {
         await ncMeta.metaUpdate(
-          null,
-          null,
+          RootScopes.ROOT,
+          RootScopes.ROOT,
           MetaTable.PLUGIN,
           {
             title: plugin.title,

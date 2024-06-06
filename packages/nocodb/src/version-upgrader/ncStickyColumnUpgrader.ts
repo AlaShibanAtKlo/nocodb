@@ -11,9 +11,24 @@ export default async function ({ ncMeta }: NcUpgraderCtx) {
     null,
     MetaTable.GRID_VIEW_COLUMNS,
   );
+
   const grid_views = [...new Set(grid_columns.map((col) => col.fk_view_id))];
 
+  const view_meta = grid_views.reduce((acc, view_id) => {
+    const sampleColumn = grid_columns.find((col) => col.fk_view_id === view_id);
+    return {
+      ...acc,
+      [view_id]: {
+        base_id: sampleColumn.base_id,
+        workspace_id: sampleColumn.fk_workspace_id,
+      },
+    };
+  }, {});
+
   for (const view_id of grid_views) {
+    const base_id = view_meta[view_id].base_id;
+    const workspace_id = view_meta[view_id].workspace_id;
+
     // get a list of view columns sorted by order
     const view_columns = await ncMeta.metaList2(
       null,
@@ -46,16 +61,16 @@ export default async function ({ ncMeta }: NcUpgraderCtx) {
       if (pkIndex === view_columns_meta.length - 1) {
         if (pkIndex > 0) {
           await ncMeta.metaUpdate(
-            null,
-            null,
+            workspace_id,
+            base_id,
             MetaTable.COLUMNS,
             { pv: true },
             view_columns_meta[pkIndex - 1].id,
           );
         } else if (view_columns_meta.length > 0) {
           await ncMeta.metaUpdate(
-            null,
-            null,
+            workspace_id,
+            base_id,
             MetaTable.COLUMNS,
             { pv: true },
             view_columns_meta[0].id,
@@ -64,8 +79,8 @@ export default async function ({ ncMeta }: NcUpgraderCtx) {
         // pk is not at the end of table
       } else if (pkIndex > -1) {
         await ncMeta.metaUpdate(
-          null,
-          null,
+          workspace_id,
+          base_id,
           MetaTable.COLUMNS,
           { pv: true },
           view_columns_meta[pkIndex + 1].id,
@@ -73,8 +88,8 @@ export default async function ({ ncMeta }: NcUpgraderCtx) {
         //  no pk at all
       } else if (view_columns_meta.length > 0) {
         await ncMeta.metaUpdate(
-          null,
-          null,
+          workspace_id,
+          base_id,
           MetaTable.COLUMNS,
           { pv: true },
           view_columns_meta[0].id,
@@ -97,8 +112,8 @@ export default async function ({ ncMeta }: NcUpgraderCtx) {
       // if primary_value_column is not visible, make it visible
       if (!primary_value_column.show) {
         await ncMeta.metaUpdate(
-          null,
-          null,
+          workspace_id,
+          base_id,
           MetaTable.GRID_VIEW_COLUMNS,
           { show: true },
           primary_value_column.id,
@@ -121,8 +136,8 @@ export default async function ({ ncMeta }: NcUpgraderCtx) {
         // update order of all columns in view to match the order in array
         for (let i = 0; i < view_columns.length; i++) {
           await ncMeta.metaUpdate(
-            null,
-            null,
+            workspace_id,
+            base_id,
             MetaTable.GRID_VIEW_COLUMNS,
             { order: i + 1 },
             view_columns[i].id,

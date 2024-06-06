@@ -162,10 +162,12 @@ export default class Sort {
   }
 
   public static async update(sortId, body, ncMeta = Noco.ncMeta) {
+    const sort = await this.get(sortId, ncMeta);
+
     // set meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      sort.fk_workspace_id,
+      sort.base_id,
       MetaTable.SORT,
       {
         fk_column_id: body.fk_column_id,

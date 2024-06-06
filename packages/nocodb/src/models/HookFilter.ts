@@ -145,6 +145,8 @@ export default class Filter {
   }
 
   static async update(id, filter: Partial<Filter>, ncMeta = Noco.ncMeta) {
+    const hookFilter = await this.get(id);
+
     const updateObj = extractProps(filter, [
       'fk_column_id',
       'comparison_op',
@@ -155,7 +157,13 @@ export default class Filter {
     ]);
 
     // set meta
-    await ncMeta.metaUpdate(null, null, MetaTable.FILTER_EXP, updateObj, id);
+    await ncMeta.metaUpdate(
+      hookFilter.fk_workspace_id,
+      hookFilter.base_id,
+      MetaTable.FILTER_EXP,
+      updateObj,
+      id,
+    );
 
     // update cache
     await NocoCache.update(`${CacheScope.FILTER_EXP}:${id}`, updateObj);

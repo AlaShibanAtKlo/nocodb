@@ -902,7 +902,13 @@ export default class View implements ViewType {
     }
 
     // set meta
-    const res = await ncMeta.metaUpdate(null, null, table, updateObj, colId);
+    const res = await ncMeta.metaUpdate(
+      view.fk_workspace_id,
+      view.base_id,
+      table,
+      updateObj,
+      colId,
+    );
 
     await NocoCache.update(`${cacheScope}:${colId}`, updateObj);
 
@@ -938,8 +944,8 @@ export default class View implements ViewType {
 
     if (existingCol) {
       await ncMeta.metaUpdate(
-        null,
-        null,
+        view.fk_workspace_id,
+        view.base_id,
         table,
         {
           order: colData.order,
@@ -1033,8 +1039,8 @@ export default class View implements ViewType {
 
       // set meta
       await ncMeta.metaUpdate(
-        null,
-        null,
+        view.fk_workspace_id,
+        view.base_id,
         MetaTable.VIEWS,
         {
           uuid: view.uuid,
@@ -1055,8 +1061,8 @@ export default class View implements ViewType {
 
       // set meta
       await ncMeta.metaUpdate(
-        null,
-        null,
+        view.fk_workspace_id,
+        view.base_id,
         MetaTable.VIEWS,
         prepareForDb({
           meta: defaultMeta,
@@ -1079,10 +1085,12 @@ export default class View implements ViewType {
     { password }: { password: string },
     ncMeta = Noco.ncMeta,
   ) {
+    const view = await this.get(viewId, ncMeta);
+
     // set meta
     await ncMeta.metaUpdate(
-      null,
-      null,
+      view.fk_workspace_id,
+      view.base_id,
       MetaTable.VIEWS,
       {
         password,
@@ -1096,10 +1104,12 @@ export default class View implements ViewType {
   }
 
   static async sharedViewDelete(viewId, ncMeta = Noco.ncMeta) {
+    const view = await this.get(viewId, ncMeta);
+
     // set meta
     await ncMeta.metaUpdate(
-      null,
-      null,
+      view.fk_workspace_id,
+      view.base_id,
       MetaTable.VIEWS,
       {
         uuid: null,
@@ -1139,8 +1149,8 @@ export default class View implements ViewType {
 
     // set meta
     await ncMeta.metaUpdate(
-      null,
-      null,
+      oldView.fk_workspace_id,
+      oldView.base_id,
       MetaTable.VIEWS,
       prepareForDb(updateObj),
       viewId,
@@ -1392,8 +1402,8 @@ export default class View implements ViewType {
     }
     // set meta
     return await ncMeta.metaUpdate(
-      null,
-      null,
+      view.fk_workspace_id,
+      view.base_id,
       table,
       { show: false },
       {
@@ -1435,6 +1445,8 @@ export default class View implements ViewType {
   }
 
   static async fixPVColumnForView(viewId, ncMeta = Noco.ncMeta) {
+    const view = await this.get(viewId, ncMeta);
+
     // get a list of view columns sorted by order
     const view_columns = await ncMeta.metaList2(
       null,
@@ -1477,8 +1489,8 @@ export default class View implements ViewType {
       // if primary_value_column is not visible, make it visible
       if (!primary_value_column.show) {
         await ncMeta.metaUpdate(
-          null,
-          null,
+          view.fk_workspace_id,
+          view.base_id,
           MetaTable.GRID_VIEW_COLUMNS,
           { show: true },
           primary_value_column.id,
@@ -1505,8 +1517,8 @@ export default class View implements ViewType {
         // update order of all columns in view to match the order in array
         for (let i = 0; i < view_columns.length; i++) {
           await ncMeta.metaUpdate(
-            null,
-            null,
+            view.fk_workspace_id,
+            view.base_id,
             MetaTable.GRID_VIEW_COLUMNS,
             { order: i + 1 },
             view_columns[i].id,

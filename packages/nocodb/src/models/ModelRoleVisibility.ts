@@ -86,11 +86,14 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
     fk_view_id: string,
     role: string,
     body: { disabled: any },
+    ncMeta = Noco.ncMeta,
   ) {
+    const view = await View.get(fk_view_id, ncMeta);
+
     // set meta
-    const res = await Noco.ncMeta.metaUpdate(
-      null,
-      null,
+    const res = await ncMeta.metaUpdate(
+      view.fk_workspace_id,
+      view.base_id,
       MetaTable.MODEL_ROLE_VISIBILITY,
       {
         disabled: body.disabled,

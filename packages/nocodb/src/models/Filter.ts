@@ -225,6 +225,8 @@ export default class Filter implements FilterType {
   }
 
   static async update(id, filter: Partial<Filter>, ncMeta = Noco.ncMeta) {
+    const filterObj = await this.get(id, ncMeta);
+
     const updateObj = extractProps(filter, [
       'fk_column_id',
       'comparison_op',
@@ -241,8 +243,8 @@ export default class Filter implements FilterType {
 
     // set meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      filterObj.fk_workspace_id,
+      filterObj.base_id,
       MetaTable.FILTER_EXP,
       updateObj,
       id,

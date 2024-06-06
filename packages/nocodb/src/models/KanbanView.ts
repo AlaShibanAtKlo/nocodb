@@ -104,6 +104,8 @@ export default class KanbanView implements KanbanType {
     body: Partial<KanbanView>,
     ncMeta = Noco.ncMeta,
   ) {
+    const existingView = await this.get(kanbanId, ncMeta);
+
     const updateObj = extractProps(body, [
       'fk_cover_image_col_id',
       'fk_grp_col_id',
@@ -112,8 +114,8 @@ export default class KanbanView implements KanbanType {
 
     // update meta
     const res = await ncMeta.metaUpdate(
-      null,
-      null,
+      existingView.fk_workspace_id,
+      existingView.base_id,
       MetaTable.KANBAN_VIEW,
       prepareForDb(updateObj),
       {

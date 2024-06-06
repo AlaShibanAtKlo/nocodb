@@ -101,6 +101,8 @@ export default class SyncSource {
     syncSource: Partial<SyncSource>,
     ncMeta = Noco.ncMeta,
   ) {
+    const syncSourceObj = await this.get(syncSourceId, ncMeta);
+
     const updateObj = extractProps(syncSource, [
       'id',
       'title',
@@ -118,8 +120,8 @@ export default class SyncSource {
 
     // set meta
     await ncMeta.metaUpdate(
-      null,
-      null,
+      syncSourceObj.fk_workspace_id,
+      syncSourceObj.base_id,
       MetaTable.SYNC_SOURCE,
       updateObj,
       syncSourceId,

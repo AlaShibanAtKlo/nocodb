@@ -534,8 +534,8 @@ export class MetaService {
 
   /***
    * Update meta data
+   * @param workspace_id - Workspace id
    * @param base_id - Base id
-   * @param dbAlias - Database alias
    * @param target - Table name
    * @param data - Data to be updated
    * @param idOrCondition - If string, will update the record with the given id. If object, will update the record with the given condition.
@@ -543,8 +543,8 @@ export class MetaService {
    * @param force - If true, will not check if a condition is present in the query builder and will execute the query as is.
    */
   public async metaUpdate(
+    workspace_id: string,
     base_id: string,
-    dbAlias: string,
     target: string,
     data: any,
     idOrCondition?: string | { [p: string]: any },
@@ -552,11 +552,30 @@ export class MetaService {
     force = false,
   ): Promise<any> {
     const query = this.knexConnection(target);
-    if (base_id !== null && base_id !== undefined) {
+
+    if (workspace_id === base_id) {
+      if (!Object.values(RootScopes).includes(workspace_id as RootScopes)) {
+        NcError.metaError({
+          message: 'Invalid scope',
+          sql: '',
+        });
+      }
+
+      if (!RootScopeTables[workspace_id].includes(target)) {
+        NcError.metaError({
+          message: 'Table not accessible from this scope',
+          sql: '',
+        });
+      }
+    } else {
+      if (!base_id) {
+        NcError.metaError({
+          message: 'Base ID is required',
+          sql: '',
+        });
+      }
+
       query.where('base_id', base_id);
-    }
-    if (dbAlias !== null && dbAlias !== undefined) {
-      query.where('db_alias', dbAlias);
     }
 
     delete data.created_at;

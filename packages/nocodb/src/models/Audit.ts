@@ -3,7 +3,7 @@ import type { AuditType } from 'nocodb-sdk';
 import Model from '~/models/Model';
 import Noco from '~/Noco';
 import { extractProps } from '~/helpers/extractProps';
-import { MetaTable } from '~/utils/globals';
+import { MetaTable, RootScopes } from '~/utils/globals';
 
 const opTypes = <const>[
   'COMMENT',
@@ -113,7 +113,12 @@ export default class Audit implements AuditType {
         insertObj.source_id = model.source_id;
       }
 
-      return await ncMeta.metaInsert2(null, null, MetaTable.AUDIT, insertObj);
+      return await ncMeta.metaInsert2(
+        RootScopes.ROOT,
+        RootScopes.ROOT,
+        MetaTable.AUDIT,
+        insertObj,
+      );
     };
 
     if (forceAwait) {

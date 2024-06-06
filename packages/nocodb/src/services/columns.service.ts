@@ -24,17 +24,8 @@ import type { Base, LinkToAnotherRecordColumn } from '~/models';
 import type CustomKnex from '~/db/CustomKnex';
 import type SqlClient from '~/db/sql-client/lib/SqlClient';
 import type { BaseModelSqlv2 } from '~/db/BaseModelSqlv2';
-import type { NcRequest } from '~/interface/config';
-import {
-  BaseUser,
-  CalendarRange,
-  Column,
-  FormulaColumn,
-  KanbanView,
-  Model,
-  Source,
-  View,
-} from '~/models';
+import type { NcContext, NcRequest } from '~/interface/config';
+import { CalendarRange } from '~/models';
 import { AppHooksService } from '~/services/app-hooks/app-hooks.service';
 import formulaQueryBuilderv2 from '~/db/formulav2/formulaQueryBuilderv2';
 import ProjectMgrv2 from '~/db/sql-mgr/v2/ProjectMgrv2';
@@ -1474,13 +1465,16 @@ export class ColumnsService {
     return Model.updatePrimaryColumn(column.fk_model_id, column.id);
   }
 
-  async columnAdd(param: {
-    req: NcRequest;
-    tableId: string;
-    column: ColumnReqType;
-    user: UserType;
-    reuse?: ReusableParams;
-  }) {
+  async columnAdd(
+    context: NcContext,
+    param: {
+      req: NcRequest;
+      tableId: string;
+      column: ColumnReqType;
+      user: UserType;
+      reuse?: ReusableParams;
+    },
+  ) {
     validatePayload('swagger.json#/components/schemas/ColumnReq', param.column);
 
     const reuse = param.reuse || {};

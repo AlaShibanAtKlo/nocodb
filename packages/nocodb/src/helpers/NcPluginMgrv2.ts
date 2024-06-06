@@ -30,7 +30,7 @@ import VultrPluginConfig from '~/plugins/vultr';
 import SESPluginConfig from '~/plugins/ses';
 import Noco from '~/Noco';
 import Local from '~/plugins/storage/Local';
-import { MetaTable } from '~/utils/globals';
+import { MetaTable, RootScopes } from '~/utils/globals';
 import Plugin from '~/models/Plugin';
 
 const defaultPlugins = [
@@ -72,15 +72,20 @@ class NcPluginMgrv2 {
       });
 
       if (!pluginConfig) {
-        await ncMeta.metaInsert2(null, null, MetaTable.PLUGIN, {
-          title: plugin.title,
-          version: plugin.version,
-          logo: plugin.logo,
-          description: plugin.description,
-          tags: plugin.tags,
-          category: plugin.category,
-          input_schema: JSON.stringify(plugin.inputs),
-        });
+        await ncMeta.metaInsert2(
+          RootScopes.ROOT,
+          RootScopes.ROOT,
+          MetaTable.PLUGIN,
+          {
+            title: plugin.title,
+            version: plugin.version,
+            logo: plugin.logo,
+            description: plugin.description,
+            tags: plugin.tags,
+            category: plugin.category,
+            input_schema: JSON.stringify(plugin.inputs),
+          },
+        );
       } else if (pluginConfig.version !== plugin.version) {
         await ncMeta.metaUpdate(
           null,

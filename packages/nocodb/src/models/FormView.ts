@@ -37,6 +37,7 @@ export default class FormView implements FormViewType {
 
   fk_view_id: string;
   columns?: FormViewColumn[];
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
   meta?: MetaType;
@@ -105,12 +106,18 @@ export default class FormView implements FormViewType {
       );
     }
 
-    if (!(view.base_id && view.source_id)) {
-      const viewRef = await View.get(view.fk_view_id);
-      insertObj.base_id = viewRef.base_id;
+    const viewRef = await View.get(view.fk_view_id);
+
+    if (!view.source_id) {
       insertObj.source_id = viewRef.source_id;
     }
-    await ncMeta.metaInsert2(null, null, MetaTable.FORM_VIEW, insertObj, true);
+    await ncMeta.metaInsert2(
+      viewRef.fk_workspace_id,
+      viewRef.base_id,
+      MetaTable.FORM_VIEW,
+      insertObj,
+      true,
+    );
 
     return this.get(view.fk_view_id, ncMeta);
   }

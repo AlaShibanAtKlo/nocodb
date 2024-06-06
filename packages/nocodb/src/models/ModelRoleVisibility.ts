@@ -12,6 +12,7 @@ import { extractProps } from '~/helpers/extractProps';
 
 export default class ModelRoleVisibility implements ModelRoleVisibilityType {
   id?: string;
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
   // fk_model_id?: string;
@@ -142,15 +143,15 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
       'source_id',
     ]);
 
-    if (!(insertObj.base_id && insertObj.source_id)) {
-      const view = await View.get(body.fk_view_id, ncMeta);
-      insertObj.base_id = view.base_id;
+    const view = await View.get(body.fk_view_id, ncMeta);
+
+    if (!insertObj.source_id) {
       insertObj.source_id = view.source_id;
     }
 
     const result = await ncMeta.metaInsert2(
-      null,
-      null,
+      view.fk_workspace_id,
+      view.base_id,
       MetaTable.MODEL_ROLE_VISIBILITY,
       insertObj,
     );

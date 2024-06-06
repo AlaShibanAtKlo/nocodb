@@ -4,6 +4,7 @@ import { MetaTable } from '~/utils/globals';
 import { prepareForDb } from '~/utils/modelUtils';
 import { extractProps } from '~/helpers/extractProps';
 import Model from '~/models/Model';
+import { NcError } from '~/helpers/catchError';
 
 export default class Comment implements CommentType {
   id?: string;
@@ -12,6 +13,7 @@ export default class Comment implements CommentType {
   comment?: string;
   parent_comment_id?: string;
   source_id?: string;
+  fk_workspace_id?: string;
   base_id?: string;
   created_by?: string;
   resolved_by?: string;
@@ -71,19 +73,20 @@ export default class Comment implements CommentType {
       'created_by_email',
     ]);
 
-    if ((!insertObj.base_id || !insertObj.source_id) && insertObj.fk_model_id) {
-      const model = await Model.getByIdOrName(
-        { id: insertObj.fk_model_id },
-        ncMeta,
-      );
+    if (!insertObj.fk_model_id) NcError.tableNotFound(insertObj.fk_model_id);
 
-      insertObj.base_id = model.base_id;
+    const model = await Model.getByIdOrName(
+      { id: insertObj.fk_model_id },
+      ncMeta,
+    );
+
+    if (!insertObj.source_id) {
       insertObj.source_id = model.source_id;
     }
 
     const res = await ncMeta.metaInsert2(
-      null,
-      null,
+      model.fk_workspace_id,
+      model.base_id,
       MetaTable.COMMENTS,
       prepareForDb(insertObj),
     );

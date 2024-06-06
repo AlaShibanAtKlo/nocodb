@@ -5,13 +5,14 @@ import {
   CacheGetType,
   CacheScope,
   MetaTable,
+  RootScopes,
 } from '~/utils/globals';
 import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
 
 export default class ApiToken implements ApiTokenType {
+  fk_workspace_id?: string;
   base_id?: string;
-  db_alias?: string;
   fk_user_id?: string;
   description?: string;
   permissions?: string;
@@ -28,11 +29,16 @@ export default class ApiToken implements ApiTokenType {
     ncMeta = Noco.ncMeta,
   ) {
     const token = nanoid(40);
-    await ncMeta.metaInsert2(null, null, MetaTable.API_TOKENS, {
-      description: apiToken.description,
-      token,
-      fk_user_id: apiToken.fk_user_id,
-    });
+    await ncMeta.metaInsert2(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.API_TOKENS,
+      {
+        description: apiToken.description,
+        token,
+        fk_user_id: apiToken.fk_user_id,
+      },
+    );
     return this.getByToken(token).then(async (apiToken) => {
       await NocoCache.appendToList(
         CacheScope.API_TOKEN,

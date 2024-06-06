@@ -13,6 +13,7 @@ import Hook from '~/models/Hook';
 import View from '~/models/View';
 import Comment from '~/models/Comment';
 import Column from '~/models/Column';
+import Base from '~/models/Base';
 import { extractProps } from '~/helpers/extractProps';
 import { sanitize } from '~/helpers/sqlSanitize';
 import { NcError } from '~/helpers/catchError';
@@ -42,6 +43,7 @@ export default class Model implements TableType {
   parent_id: string;
   password: string;
   pin: BoolType;
+  fk_workspace_id?: string;
   base_id: string;
   schema: any;
   show_all_fields: boolean;
@@ -123,6 +125,7 @@ export default class Model implements TableType {
     model: Partial<TableReqType> & {
       mm?: BoolType;
       type?: ModelTypes;
+      sourceId?: string;
     },
     ncMeta = Noco.ncMeta,
   ) {
@@ -152,9 +155,13 @@ export default class Model implements TableType {
       insertObj.type = ModelTypes.TABLE;
     }
 
+    const base = await Base.get(baseId, ncMeta);
+
+    insertObj.sourceId = sourceId;
+
     const { id } = await ncMeta.metaInsert2(
-      baseId,
-      sourceId,
+      base.fk_workspace_id,
+      base.id,
       MetaTable.MODELS,
       insertObj,
     );

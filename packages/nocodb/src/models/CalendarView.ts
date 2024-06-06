@@ -11,6 +11,7 @@ import CalendarRange from '~/models/CalendarRange';
 export default class CalendarView implements CalendarType {
   fk_view_id: string;
   title: string;
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
   meta?: MetaType;
@@ -65,14 +66,13 @@ export default class CalendarView implements CalendarType {
 
     const viewRef = await View.get(view.fk_view_id);
 
-    if (!(view.base_id && view.source_id)) {
-      insertObj.base_id = viewRef.base_id;
+    if (!view.source_id) {
       insertObj.source_id = viewRef.source_id;
     }
 
     await ncMeta.metaInsert2(
-      null,
-      null,
+      viewRef.fk_workspace_id,
+      viewRef.base_id,
       MetaTable.CALENDAR_VIEW,
       insertObj,
       true,

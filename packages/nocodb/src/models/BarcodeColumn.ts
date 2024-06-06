@@ -3,9 +3,12 @@ import NocoCache from '~/cache/NocoCache';
 import { extractProps } from '~/helpers/extractProps';
 import { CacheGetType, CacheScope, MetaTable } from '~/utils/globals';
 import { Column } from '~/models/index';
+import { NcError } from '~/helpers/catchError';
 
 export default class BarcodeColumn {
   id: string;
+  fk_workspace_id?: string;
+  fk_base_id?: string;
   fk_column_id: string;
   fk_barcode_value_column_id: string;
   barcode_format: string;
@@ -23,7 +26,24 @@ export default class BarcodeColumn {
       'fk_barcode_value_column_id',
       'barcode_format',
     ]);
-    await ncMeta.metaInsert2(null, null, MetaTable.COL_BARCODE, insertObj);
+
+    const column = await Column.get(
+      {
+        colId: insertObj.fk_column_id,
+      },
+      ncMeta,
+    );
+
+    if (!column) {
+      NcError.fieldNotFound(insertObj.fk_column_id);
+    }
+
+    await ncMeta.metaInsert2(
+      column.fk_workspace_id,
+      column.base_id,
+      MetaTable.COL_BARCODE,
+      insertObj,
+    );
 
     return this.read(barcodeColumn.fk_column_id, ncMeta);
   }

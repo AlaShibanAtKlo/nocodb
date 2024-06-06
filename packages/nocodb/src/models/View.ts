@@ -83,6 +83,7 @@ export default class View implements ViewType {
 
   sorts: Sort[];
   filter: Filter;
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
   show_system_fields?: boolean;
@@ -250,10 +251,10 @@ export default class View implements ViewType {
 
     insertObj.meta = stringifyMetaProp(insertObj);
 
+    const model = await Model.getByIdOrName({ id: view.fk_model_id }, ncMeta);
+
     // get base and base id if missing
-    if (!(view.base_id && view.source_id)) {
-      const model = await Model.getByIdOrName({ id: view.fk_model_id }, ncMeta);
-      insertObj.base_id = model.base_id;
+    if (!view.source_id) {
       insertObj.source_id = model.source_id;
     }
 
@@ -262,8 +263,8 @@ export default class View implements ViewType {
     await copyFromView?.getView();
 
     const { id: view_id } = await ncMeta.metaInsert2(
-      null,
-      null,
+      model.fk_workspace_id,
+      model.base_id,
       MetaTable.VIEWS,
       insertObj,
     );
@@ -996,12 +997,18 @@ export default class View implements ViewType {
             show: colData.show,
           });
       }
-      return await ncMeta.metaInsert2(view.base_id, view.source_id, table, {
-        fk_view_id: viewId,
-        fk_column_id: fkColId,
-        order: colData.order,
-        show: colData.show,
-      });
+      return await ncMeta.metaInsert2(
+        view.fk_workspace_id,
+        view.base_id,
+        table,
+        {
+          source_id: view.source_id,
+          fk_view_id: viewId,
+          fk_column_id: fkColId,
+          order: colData.order,
+          show: colData.show,
+        },
+      );
     }
   }
 
@@ -1816,16 +1823,16 @@ export default class View implements ViewType {
       view.copy_from_id && (await View.get(view.copy_from_id, ncMeta));
     await copyFromView?.getView();
 
+    const table = await Model.getByIdOrName({ id: view.fk_model_id }, ncMeta);
+
     // get base and base id if missing
-    if (!(view.base_id && view.source_id)) {
-      const model = await Model.getByIdOrName({ id: view.fk_model_id }, ncMeta);
-      insertObj.base_id = model.base_id;
-      insertObj.source_id = model.source_id;
+    if (!view.source_id) {
+      insertObj.source_id = table.source_id;
     }
 
     const insertedView = await ncMeta.metaInsert2(
-      null,
-      null,
+      table.fk_workspace_id,
+      table.base_id,
       MetaTable.VIEWS,
       insertObj,
     );

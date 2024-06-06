@@ -36,7 +36,14 @@ export default class LookupColumn implements LookupType {
       'fk_lookup_column_id',
     ]);
 
-    await ncMeta.metaInsert2(null, null, MetaTable.COL_LOOKUP, insertObj);
+    const column = await Column.get({ colId: insertObj.fk_column_id }, ncMeta);
+
+    await ncMeta.metaInsert2(
+      column.fk_workspace_id,
+      column.base_id,
+      MetaTable.COL_LOOKUP,
+      insertObj,
+    );
 
     return this.read(data.fk_column_id, ncMeta).then(async (lookupColumn) => {
       await NocoCache.appendToList(

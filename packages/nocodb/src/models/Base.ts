@@ -7,6 +7,7 @@ import {
   CacheGetType,
   CacheScope,
   MetaTable,
+  RootScopes,
 } from '~/utils/globals';
 import { extractProps } from '~/helpers/extractProps';
 import NocoCache from '~/cache/NocoCache';
@@ -15,6 +16,7 @@ import NcConnectionMgrv2 from '~/utils/common/NcConnectionMgrv2';
 
 export default class Base implements BaseType {
   public id: string;
+  public fk_workspace_id?: string;
   public title: string;
   public prefix: string;
   public status: string;
@@ -67,8 +69,8 @@ export default class Base implements BaseType {
     }
 
     const { id: baseId } = await ncMeta.metaInsert2(
-      null,
-      null,
+      RootScopes.BASE,
+      RootScopes.BASE,
       MetaTable.PROJECT,
       insertObj,
     );

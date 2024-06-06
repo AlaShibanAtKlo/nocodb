@@ -13,6 +13,7 @@ export default class KanbanViewColumn implements KanbanColumnType {
 
   fk_view_id: string;
   fk_column_id: string;
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
 
@@ -57,15 +58,15 @@ export default class KanbanViewColumn implements KanbanColumnType {
       },
     );
 
-    if (!(column.base_id && column.source_id)) {
-      const viewRef = await View.get(column.fk_view_id, ncMeta);
-      insertObj.base_id = viewRef.base_id;
+    const viewRef = await View.get(insertObj.fk_view_id, ncMeta);
+
+    if (!insertObj.source_id) {
       insertObj.source_id = viewRef.source_id;
     }
 
     const { id } = await ncMeta.metaInsert2(
-      null,
-      null,
+      viewRef.fk_workspace_id,
+      viewRef.base_id,
       MetaTable.KANBAN_VIEW_COLUMNS,
       insertObj,
     );

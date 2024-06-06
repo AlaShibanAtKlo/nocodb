@@ -16,6 +16,7 @@ export default class FormViewColumn implements FormColumnType {
   id?: string;
   fk_view_id?: string;
   fk_column_id?: string;
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
   label?: StringOrNullType;
@@ -86,15 +87,15 @@ export default class FormViewColumn implements FormColumnType {
       insertObj.meta = serializeJSON(insertObj.meta);
     }
 
-    if (!(insertObj.base_id && insertObj.source_id)) {
-      const viewRef = await View.get(insertObj.fk_view_id, ncMeta);
-      insertObj.base_id = viewRef.base_id;
+    const viewRef = await View.get(insertObj.fk_view_id, ncMeta);
+
+    if (!insertObj.source_id) {
       insertObj.source_id = viewRef.source_id;
     }
 
     const { id } = await ncMeta.metaInsert2(
-      null,
-      null,
+      viewRef.fk_workspace_id,
+      viewRef.base_id,
       MetaTable.FORM_VIEW_COLUMNS,
       insertObj,
     );

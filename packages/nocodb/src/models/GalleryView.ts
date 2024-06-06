@@ -28,6 +28,7 @@ export default class GalleryView implements GalleryType {
   show_all_fields?: BoolType;
   fk_cover_image_col_id?: string;
 
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
 
@@ -77,15 +78,15 @@ export default class GalleryView implements GalleryType {
       view?.fk_cover_image_col_id ||
       columns?.find((c) => c.uidt === UITypes.Attachment)?.id;
 
-    if (!(view.base_id && view.source_id)) {
-      const viewRef = await View.get(view.fk_view_id);
-      insertObj.base_id = viewRef.base_id;
+    const viewRef = await View.get(insertObj.fk_view_id, ncMeta);
+
+    if (!insertObj.source_id) {
       insertObj.source_id = viewRef.source_id;
     }
 
     await ncMeta.metaInsert2(
-      null,
-      null,
+      viewRef.fk_workspace_id,
+      viewRef.base_id,
       MetaTable.GALLERY_VIEW,
       insertObj,
       true,

@@ -1,9 +1,11 @@
 import Noco from '~/Noco';
 import { extractProps } from '~/helpers/extractProps';
 import { MetaTable } from '~/utils/globals';
+import { SyncSource } from '~/models';
 
 export default class SyncLogs {
   id?: string;
+  fk_workspace_id?: string;
   base_id?: string;
   fk_sync_source_id?: string;
   time_taken?: string;
@@ -35,9 +37,14 @@ export default class SyncLogs {
       'status_details',
     ]);
 
+    const syncSource = await SyncSource.get(
+      insertObj.fk_sync_source_id,
+      ncMeta,
+    );
+
     const { id } = await ncMeta.metaInsert2(
-      null,
-      null,
+      syncSource.fk_workspace_id,
+      syncSource.base_id,
       MetaTable.SYNC_LOGS,
       insertObj,
     );

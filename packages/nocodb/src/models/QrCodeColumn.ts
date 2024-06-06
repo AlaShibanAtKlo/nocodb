@@ -3,8 +3,11 @@ import NocoCache from '~/cache/NocoCache';
 import { extractProps } from '~/helpers/extractProps';
 import { CacheGetType, CacheScope, MetaTable } from '~/utils/globals';
 import { Column } from '~/models';
+import { NcError } from '~/helpers/catchError';
 
 export default class QrCodeColumn {
+  base_id?: string;
+  fk_workspace_id?: string;
   fk_column_id: string;
   fk_qr_value_column_id: string;
 
@@ -21,7 +24,23 @@ export default class QrCodeColumn {
       'fk_qr_value_column_id',
     ]);
 
-    await ncMeta.metaInsert2(null, null, MetaTable.COL_QRCODE, insertObj);
+    const column = await Column.get(
+      {
+        colId: insertObj.fk_column_id,
+      },
+      ncMeta,
+    );
+
+    if (!column) {
+      NcError.fieldNotFound(insertObj.fk_column_id);
+    }
+
+    await ncMeta.metaInsert2(
+      column.fk_workspace_id,
+      column.base_id,
+      MetaTable.COL_QRCODE,
+      insertObj,
+    );
 
     return this.read(qrCode.fk_column_id, ncMeta);
   }

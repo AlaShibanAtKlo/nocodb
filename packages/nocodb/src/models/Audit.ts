@@ -51,6 +51,7 @@ export default class Audit implements AuditType {
   user?: string;
   ip?: string;
   source_id?: string;
+  fk_workspace_id?: string;
   base_id?: string;
   fk_model_id?: string;
   row_id?: string;

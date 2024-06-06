@@ -11,7 +11,7 @@ import XcMigrationSource from '~/meta/migrations/XcMigrationSource';
 import XcMigrationSourcev2 from '~/meta/migrations/XcMigrationSourcev2';
 import { XKnex } from '~/db/CustomKnex';
 import { NcConfig } from '~/utils/nc-config';
-import { MetaTable } from '~/utils/globals';
+import { MetaTable, RootScopes, RootScopeTables } from '~/utils/globals';
 import { NcError } from '~/helpers/catchError';
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -103,15 +103,15 @@ export class MetaService {
 
   /***
    * Insert record into meta data
-   * @param base_id - Base id
+   * @param fk_workspace_id - Base id
    * @param dbAlias - Database alias
    * @param target - Table name
    * @param data - Data to be inserted
    * @param ignoreIdGeneration - If true, will not generate id for the record
    */
   public async metaInsert2(
+    workspace_id: string,
     base_id: string,
-    source_id: string,
     target: string,
     data: any,
     ignoreIdGeneration?: boolean,
@@ -122,8 +122,31 @@ export class MetaService {
         ? {}
         : { id: data?.id || (await this.genNanoid(target)) }),
     };
-    if (source_id !== null) insertObj.source_id = source_id;
-    if (base_id !== null) insertObj.base_id = base_id;
+
+    if (workspace_id === base_id) {
+      if (!(workspace_id in RootScopes)) {
+        NcError.metaError({
+          message: 'Invalid scope',
+          sql: '',
+        });
+      }
+
+      if (!RootScopeTables[workspace_id].includes(target)) {
+        NcError.metaError({
+          message: 'Table not accessible from this scope',
+          sql: '',
+        });
+      }
+    } else {
+      if (!base_id) {
+        NcError.metaError({
+          message: 'Base ID is required',
+          sql: '',
+        });
+      }
+
+      insertObj.base_id = base_id;
+    }
 
     await this.knexConnection(target).insert({
       ...insertObj,
@@ -592,7 +615,7 @@ export class MetaService {
    *
    * @param queryBuilder - The Knex QueryBuilder instance to check.
    */
-  private checkConditionPresent(
+  protected checkConditionPresent(
     queryBuilder: Knex.QueryBuilder,
     operation: 'delete' | 'update',
   ) {

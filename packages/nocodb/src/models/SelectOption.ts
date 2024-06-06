@@ -3,10 +3,14 @@ import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
 import { extractProps } from '~/helpers/extractProps';
 import { CacheGetType, CacheScope, MetaTable } from '~/utils/globals';
+import { Column } from '~/models';
+import { NcError } from '~/helpers/catchError';
 
 export default class SelectOption implements SelectOptionType {
   id: string;
   title: string;
+  base_id?: string;
+  fk_workspace_id?: string;
   fk_column_id: string;
   color: string;
   order: number;
@@ -27,9 +31,20 @@ export default class SelectOption implements SelectOptionType {
       'order',
     ]);
 
+    const column = await Column.get(
+      {
+        colId: insertObj.fk_column_id,
+      },
+      ncMeta,
+    );
+
+    if (!column) {
+      NcError.fieldNotFound(insertObj.fk_column_id);
+    }
+
     const { id } = await ncMeta.metaInsert2(
-      null,
-      null,
+      column.fk_workspace_id,
+      column.base_id,
       MetaTable.COL_SELECT_OPTIONS,
       insertObj,
     );

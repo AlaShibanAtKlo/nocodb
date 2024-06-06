@@ -1,7 +1,7 @@
 import type { AppEvents } from 'nocodb-sdk';
 import { extractProps } from '~/helpers/extractProps';
 import Noco from '~/Noco';
-import { MetaTable } from '~/utils/globals';
+import { MetaTable, RootScopes } from '~/utils/globals';
 import { parseMetaProp, stringifyMetaProp } from '~/utils/modelUtils';
 
 export default class Notification {
@@ -33,8 +33,8 @@ export default class Notification {
     insertData.body = stringifyMetaProp(insertData, 'body');
 
     return await ncMeta.metaInsert2(
-      null,
-      null,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.NOTIFICATION,
       insertData,
     );

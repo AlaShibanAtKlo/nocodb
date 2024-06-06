@@ -10,6 +10,7 @@ import { prepareForDb, prepareForResponse } from '~/utils/modelUtils';
 export default class KanbanView implements KanbanType {
   fk_view_id: string;
   title: string;
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
   fk_grp_col_id?: string;
@@ -81,15 +82,15 @@ export default class KanbanView implements KanbanType {
       view?.fk_cover_image_col_id ||
       columns?.find((c) => c.uidt === UITypes.Attachment)?.id;
 
-    if (!(view.base_id && view.source_id)) {
-      const viewRef = await View.get(view.fk_view_id);
-      insertObj.base_id = viewRef.base_id;
+    const viewRef = await View.get(insertObj.fk_view_id, ncMeta);
+
+    if (!insertObj.source_id) {
       insertObj.source_id = viewRef.source_id;
     }
 
     await ncMeta.metaInsert2(
-      null,
-      null,
+      viewRef.fk_workspace_id,
+      viewRef.base_id,
       MetaTable.KANBAN_VIEW,
       insertObj,
       true,

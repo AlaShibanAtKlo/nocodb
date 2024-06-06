@@ -263,3 +263,21 @@ export const DB_TYPES = <const>[
   'pg',
   'databricks',
 ];
+
+export enum RootScopes {
+  ROOT = 'root',
+  ORG = 'org',
+  WORKSPACE = 'workspace',
+  BASE = 'base',
+}
+
+export const RootScopeTables = {
+  [RootScopes.ROOT]: [
+    MetaTable.USERS,
+    MetaTable.USER_REFRESH_TOKENS,
+    MetaTable.API_TOKENS,
+    MetaTable.PLUGIN,
+    MetaTable.STORE,
+  ],
+  [RootScopes.BASE]: [MetaTable.PROJECT],
+};

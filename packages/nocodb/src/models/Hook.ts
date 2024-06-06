@@ -33,6 +33,7 @@ export default class Hook implements HookType {
   timeout?: number;
   active?: BoolType;
 
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
   version?: 'v1' | 'v2';
@@ -145,9 +146,9 @@ export default class Hook implements HookType {
       insertObj.notification = JSON.stringify(insertObj.notification);
     }
 
-    if (!(hook.base_id && hook.source_id)) {
-      const model = await Model.getByIdOrName({ id: hook.fk_model_id }, ncMeta);
-      insertObj.base_id = model.base_id;
+    const model = await Model.getByIdOrName({ id: hook.fk_model_id }, ncMeta);
+
+    if (!insertObj.source_id) {
       insertObj.source_id = model.source_id;
     }
 
@@ -155,8 +156,8 @@ export default class Hook implements HookType {
     insertObj.version = 'v2';
 
     const { id } = await ncMeta.metaInsert2(
-      null,
-      null,
+      model.fk_workspace_id,
+      model.base_id,
       MetaTable.HOOKS,
       insertObj,
     );

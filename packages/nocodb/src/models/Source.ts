@@ -27,6 +27,7 @@ import { InstanceCommands } from '~/interface/Jobs';
 // todo: hide credentials
 export default class Source implements SourceType {
   id?: string;
+  fk_workspace_id?: string;
   base_id?: string;
   alias?: string;
   type?: DriverClient;
@@ -78,13 +79,15 @@ export default class Source implements SourceType {
       insertObj.meta = stringifyMetaProp(insertObj);
     }
 
+    const base = await Base.get(source.baseId, ncMeta);
+
     insertObj.order = await ncMeta.metaGetNextOrder(MetaTable.BASES, {
       base_id: source.baseId,
     });
 
     const { id } = await ncMeta.metaInsert2(
-      source.baseId,
-      null,
+      base.fk_workspace_id,
+      base.id,
       MetaTable.BASES,
       insertObj,
     );

@@ -3,10 +3,14 @@ import NocoCache from '~/cache/NocoCache';
 import { extractProps } from '~/helpers/extractProps';
 import { CacheGetType, CacheScope, MetaTable } from '~/utils/globals';
 import { parseMetaProp, stringifyMetaProp } from '~/utils/modelUtils';
+import { Column } from '~/models';
+import { NcError } from '~/helpers/catchError';
 
 export default class FormulaColumn {
   formula: string;
   formula_raw: string;
+  fk_workspace_id?: string;
+  base_id?: string;
   fk_column_id: string;
   error: string;
   private parsed_tree?: any;
@@ -31,7 +35,23 @@ export default class FormulaColumn {
 
     insertObj.parsed_tree = stringifyMetaProp(insertObj, 'parsed_tree');
 
-    await ncMeta.metaInsert2(null, null, MetaTable.COL_FORMULA, insertObj);
+    const column = await Column.get(
+      {
+        colId: insertObj.fk_column_id,
+      },
+      ncMeta,
+    );
+
+    if (!column) {
+      NcError.fieldNotFound(insertObj.fk_column_id);
+    }
+
+    await ncMeta.metaInsert2(
+      column.fk_workspace_id,
+      column.base_id,
+      MetaTable.COL_FORMULA,
+      insertObj,
+    );
 
     return this.read(formulaColumn.fk_column_id, ncMeta);
   }

@@ -18,6 +18,7 @@ export default class Sort {
   fk_view_id: string;
   fk_column_id?: string;
   direction?: 'asc' | 'desc' | 'count-desc' | 'count-asc';
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
 
@@ -66,9 +67,10 @@ export default class Sort {
             })
             .first()
         )?.order || 0) + 1;
-    if (!(sortObj.base_id && sortObj.source_id)) {
-      const model = await Column.get({ colId: sortObj.fk_column_id }, ncMeta);
-      insertObj.base_id = model.base_id;
+
+    const model = await Column.get({ colId: sortObj.fk_column_id }, ncMeta);
+
+    if (!sortObj.source_id) {
       insertObj.source_id = model.source_id;
     }
 
@@ -82,7 +84,12 @@ export default class Sort {
         .increment('order', 1);
     }
 
-    const row = await ncMeta.metaInsert2(null, null, MetaTable.SORT, insertObj);
+    const row = await ncMeta.metaInsert2(
+      model.fk_workspace_id,
+      model.base_id,
+      MetaTable.SORT,
+      insertObj,
+    );
     if (sortObj.push_to_top) {
       const sortList = await ncMeta.metaList2(null, null, MetaTable.SORT, {
         condition: { fk_view_id: sortObj.fk_view_id },

@@ -14,6 +14,7 @@ import { extractProps } from '~/helpers/extractProps';
 import { parseMetaProp } from '~/utils/modelUtils';
 
 export default class BaseUser {
+  fk_workspace_id?: string;
   base_id: string;
   fk_user_id: string;
   roles?: string;
@@ -77,9 +78,11 @@ export default class BaseUser {
       'roles',
     ]);
 
+    const base = await Base.get(insertObj.base_id, ncMeta);
+
     const { base_id, fk_user_id } = await ncMeta.metaInsert2(
-      null,
-      null,
+      base.fk_workspace_id,
+      base.id,
       MetaTable.PROJECT_USERS,
       insertObj,
       true,

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import Noco from '~/Noco';
 import { extractProps } from '~/helpers/extractProps';
-import { MetaTable } from '~/utils/globals';
+import { MetaTable, RootScopes } from '~/utils/globals';
 import { parseMetaProp, stringifyMetaProp } from '~/utils/modelUtils';
 
 const NC_REFRESH_TOKEN_EXP_IN_DAYS =
@@ -59,8 +59,8 @@ export default class UserRefreshToken {
     }
 
     await ncMeta.metaInsert2(
-      null,
-      null,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.USER_REFRESH_TOKENS,
       insertObj,
       true,

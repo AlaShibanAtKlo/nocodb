@@ -3,10 +3,14 @@ import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
 import { extractProps } from '~/helpers/extractProps';
 import { CacheDelDirection, CacheScope, MetaTable } from '~/utils/globals';
+import { Column } from '~/models';
+import { NcError } from '~/helpers/catchError';
 
 export default class CalendarRange implements CalendarRangeType {
   id?: string;
   fk_from_column_id?: string;
+  fk_workspace_id?: string;
+  base_id?: string;
   fk_view_id?: string;
 
   constructor(data: Partial<CalendarRange>) {
@@ -17,20 +21,31 @@ export default class CalendarRange implements CalendarRangeType {
     data: Partial<CalendarRange>[],
     ncMeta = Noco.ncMeta,
   ) {
-    let insertObj = [];
+    const calRanges: {
+      fk_from_column_id?: string;
+      fk_view_id?: string;
+    }[] = [];
 
     for (const d of data) {
       const tempObj = extractProps(d, ['fk_from_column_id', 'fk_view_id']);
-      insertObj.push(tempObj);
+      calRanges.push(tempObj);
     }
 
-    if (!insertObj.length) return false;
+    if (!calRanges.length) return false;
 
-    insertObj = insertObj[0];
+    const insertObj = calRanges[0];
+
+    const column = await Column.get({
+      colId: insertObj.fk_from_column_id,
+    });
+
+    if (!column) {
+      NcError.fieldNotFound(insertObj.fk_from_column_id);
+    }
 
     const insertData = await ncMeta.metaInsert2(
-      null,
-      null,
+      column.fk_workspace_id,
+      column.base_id,
       MetaTable.CALENDAR_VIEW_RANGE,
       insertObj,
     );

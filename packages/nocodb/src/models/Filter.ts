@@ -19,6 +19,7 @@ import { extractProps } from '~/helpers/extractProps';
 export default class Filter implements FilterType {
   id: string;
 
+  fk_workspace_id?: string;
   fk_model_id?: string;
   fk_view_id?: string;
   fk_hook_id?: string;
@@ -94,29 +95,24 @@ export default class Filter implements FilterType {
       [referencedModelColName]: filter[referencedModelColName],
     });
 
-    if (!(filter.base_id && filter.source_id)) {
-      let model: { base_id?: string; source_id?: string };
-      if (filter.fk_view_id) {
-        model = await View.get(filter.fk_view_id, ncMeta);
-      } else if (filter.fk_hook_id) {
-        model = await Hook.get(filter.fk_hook_id, ncMeta);
-      } else if (filter.fk_link_col_id) {
-        model = await Column.get({ colId: filter.fk_link_col_id }, ncMeta);
-      } else if (filter.fk_column_id) {
-        model = await Column.get({ colId: filter.fk_column_id }, ncMeta);
-      } else {
-        NcError.invalidFilter(JSON.stringify(filter));
-      }
-
-      if (model != null) {
-        insertObj.base_id = model.base_id;
-        insertObj.source_id = model.source_id;
-      }
+    let model: {
+      fk_workspace_id?: string;
+      base_id?: string;
+      source_id?: string;
+    };
+    if (filter.fk_view_id) {
+      model = await View.get(filter.fk_view_id, ncMeta);
+    } else if (filter.fk_hook_id) {
+      model = await Hook.get(filter.fk_hook_id, ncMeta);
+    } else if (filter.fk_column_id) {
+      model = await Column.get({ colId: filter.fk_column_id }, ncMeta);
+    } else {
+      NcError.invalidFilter(JSON.stringify(filter));
     }
 
     const row = await ncMeta.metaInsert2(
-      null,
-      null,
+      model.fk_workspace_id,
+      model.base_id,
       MetaTable.FILTER_EXP,
       insertObj,
     );

@@ -11,6 +11,7 @@ import { prepareForDb, prepareForResponse } from '~/utils/modelUtils';
 export default class MapView implements MapType {
   fk_view_id: string;
   title: string;
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
   fk_geo_data_col_id?: string;
@@ -54,14 +55,19 @@ export default class MapView implements MapType {
       meta: view.meta,
     };
 
-    const viewRef = await View.get(view.fk_view_id);
+    const viewRef = await View.get(insertObj.fk_view_id, ncMeta);
 
-    if (!(view.base_id && view.source_id)) {
-      insertObj.base_id = viewRef.base_id;
+    if (!insertObj.source_id) {
       insertObj.source_id = viewRef.source_id;
     }
 
-    await ncMeta.metaInsert2(null, null, MetaTable.MAP_VIEW, insertObj, true);
+    await ncMeta.metaInsert2(
+      viewRef.fk_workspace_id,
+      viewRef.base_id,
+      MetaTable.MAP_VIEW,
+      insertObj,
+      true,
+    );
 
     return this.get(view.fk_view_id, ncMeta);
   }

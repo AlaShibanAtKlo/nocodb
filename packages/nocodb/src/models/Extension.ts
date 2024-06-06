@@ -8,9 +8,11 @@ import {
   MetaTable,
 } from '~/utils/globals';
 import NocoCache from '~/cache/NocoCache';
+import { Base } from '~/models';
 
 export default class Extension {
   id?: string;
+  fk_workspace_id?: string;
   base_id?: string;
   fk_user_id?: string;
   extension_id?: string;
@@ -94,9 +96,11 @@ export default class Extension {
       });
     }
 
+    const base = await Base.get(insertObj.base_id, ncMeta);
+
     const { id } = await ncMeta.metaInsert2(
-      null,
-      null,
+      base.fk_workspace_id,
+      base.id,
       MetaTable.EXTENSIONS,
       prepareForDb(insertObj, ['kv_store', 'meta']),
     );

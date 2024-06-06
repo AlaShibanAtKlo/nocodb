@@ -9,6 +9,7 @@ import { prepareForDb, prepareForResponse } from '~/utils/modelUtils';
 
 export default class GridView implements GridType {
   fk_view_id: string;
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
   meta?: MetaType;
@@ -48,13 +49,19 @@ export default class GridView implements GridType {
       'row_height',
     ]);
 
-    if (!(insertObj.base_id && insertObj.source_id)) {
-      const viewRef = await View.get(insertObj.fk_view_id, ncMeta);
-      insertObj.base_id = viewRef.base_id;
+    const viewRef = await View.get(insertObj.fk_view_id, ncMeta);
+
+    if (!insertObj.source_id) {
       insertObj.source_id = viewRef.source_id;
     }
 
-    await ncMeta.metaInsert2(null, null, MetaTable.GRID_VIEW, insertObj, true);
+    await ncMeta.metaInsert2(
+      viewRef.fk_workspace_id,
+      viewRef.base_id,
+      MetaTable.GRID_VIEW,
+      insertObj,
+      true,
+    );
 
     return this.get(view.fk_view_id, ncMeta);
   }

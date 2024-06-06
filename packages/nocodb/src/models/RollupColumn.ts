@@ -4,6 +4,7 @@ import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
 import { extractProps } from '~/helpers/extractProps';
 import { CacheGetType, CacheScope, MetaTable } from '~/utils/globals';
+import { NcError } from '~/helpers/catchError';
 
 export const ROLLUP_FUNCTIONS = <const>[
   'count',
@@ -17,6 +18,8 @@ export const ROLLUP_FUNCTIONS = <const>[
 
 export default class RollupColumn implements RollupType {
   id: string;
+  base_id?: string;
+  fk_workspace_id?: string;
   fk_column_id;
   fk_relation_column_id;
   fk_rollup_column_id;
@@ -36,7 +39,24 @@ export default class RollupColumn implements RollupType {
       'fk_rollup_column_id',
       'rollup_function',
     ]);
-    await ncMeta.metaInsert2(null, null, MetaTable.COL_ROLLUP, insertObj);
+
+    const column = await Column.get(
+      {
+        colId: insertObj.fk_column_id,
+      },
+      ncMeta,
+    );
+
+    if (!column) {
+      NcError.fieldNotFound(insertObj.fk_column_id);
+    }
+
+    await ncMeta.metaInsert2(
+      column.fk_workspace_id,
+      column.base_id,
+      MetaTable.COL_ROLLUP,
+      insertObj,
+    );
 
     return this.read(data.fk_column_id, ncMeta).then(async (rollupColumn) => {
       await NocoCache.appendToList(

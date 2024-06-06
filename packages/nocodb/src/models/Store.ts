@@ -2,7 +2,12 @@ import type { SortType } from 'nocodb-sdk';
 import { NcError } from '~/helpers/catchError';
 import { extractProps } from '~/helpers/extractProps';
 import Noco from '~/Noco';
-import { CacheGetType, CacheScope, MetaTable } from '~/utils/globals';
+import {
+  CacheGetType,
+  CacheScope,
+  MetaTable,
+  RootScopes,
+} from '~/utils/globals';
 import NocoCache from '~/cache/NocoCache';
 
 // Store is used for storing key value pairs
@@ -64,7 +69,12 @@ export default class Store {
         key: store.key,
       });
     } else {
-      await ncMeta.metaInsert2(null, null, MetaTable.STORE, insertObj);
+      await ncMeta.metaInsert2(
+        RootScopes.ROOT,
+        RootScopes.ROOT,
+        MetaTable.STORE,
+        insertObj,
+      );
     }
     if (store.key) await NocoCache.del(`${CacheScope.STORE}:${store.key}`);
   }

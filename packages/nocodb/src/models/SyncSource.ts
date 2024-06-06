@@ -3,6 +3,7 @@ import { NcError } from '~/helpers/catchError';
 import Noco from '~/Noco';
 import { extractProps } from '~/helpers/extractProps';
 import { MetaTable } from '~/utils/globals';
+import { Source } from '~/models';
 
 export default class SyncSource {
   id?: string;
@@ -11,6 +12,7 @@ export default class SyncSource {
   details?: any;
   deleted?: boolean;
   order?: number;
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
   fk_user_id?: string;
@@ -82,9 +84,11 @@ export default class SyncSource {
       insertObj.details = JSON.stringify(insertObj.details);
     }
 
+    const source = await Source.get(insertObj.source_id, false, ncMeta);
+
     const { id } = await ncMeta.metaInsert2(
-      null,
-      null,
+      source.fk_workspace_id,
+      source.base_id,
       MetaTable.SYNC_SOURCE,
       insertObj,
     );

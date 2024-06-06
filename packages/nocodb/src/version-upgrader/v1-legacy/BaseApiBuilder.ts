@@ -13,6 +13,7 @@ import type { MysqlClient, PgClient, SqlClient } from 'nc-help';
 import type { DbConfig, NcConfig } from '~/interface/config';
 import ModelXcMetaFactory from '~/db/sql-mgr/code/models/xc/ModelXcMetaFactory';
 import NcConnectionMgr from '~/utils/common/NcConnectionMgr';
+import { RootScopes } from '~/utils/globals';
 
 const log = debug('nc:api:source');
 
@@ -224,11 +225,16 @@ export default abstract class BaseApiBuilder<T extends Noco> {
         await this.xcMeta.metaList2(this.baseId, null, 'nc_models')
       )?.length;
       configObj.version = isOld ? '0009000' : process.env.NC_VERSION;
-      await this.xcMeta.metaInsert2(this.baseId, null, 'nc_store', {
-        key: 'NC_CONFIG',
-        value: JSON.stringify(configObj),
-        dbAlias: this.dbAlias,
-      });
+      await this.xcMeta.metaInsert2(
+        RootScopes.ROOT,
+        RootScopes.ROOT,
+        'nc_store',
+        {
+          key: 'NC_CONFIG',
+          value: JSON.stringify(configObj),
+          dbAlias: this.dbAlias,
+        },
+      );
       if (isOld) {
         await this.xcUpgrade();
       }

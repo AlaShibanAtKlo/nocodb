@@ -27,6 +27,7 @@ export default class Filter {
   logical_op?: string;
   is_group?: boolean;
   children?: Filter[];
+  fk_workspace_id?: string;
   base_id?: string;
   source_id?: string;
   column?: Column;
@@ -63,15 +64,15 @@ export default class Filter {
       'source_id',
     ]);
 
-    if (!(filter.base_id && filter.source_id)) {
-      const model = await Column.get({ colId: filter.fk_column_id }, ncMeta);
-      insertObj.base_id = model.base_id;
+    const model = await Column.get({ colId: filter.fk_column_id }, ncMeta);
+
+    if (!filter.source_id) {
       insertObj.source_id = model.source_id;
     }
 
     const row = await ncMeta.metaInsert2(
-      null,
-      null,
+      model.fk_workspace_id,
+      model.base_id,
       MetaTable.FILTER_EXP,
       insertObj,
     );

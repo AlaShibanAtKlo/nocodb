@@ -7,6 +7,7 @@ import { MetaTable } from '~/utils/globals';
 export default class HookLog implements HookLogType {
   id?: string;
   source_id?: string;
+  fk_workspace_id?: string;
   base_id?: string;
   fk_hook_id?: string;
   type?: string;
@@ -85,9 +86,9 @@ export default class HookLog implements HookLogType {
       'triggered_by',
     ]);
 
-    if (!(hookLog.base_id && hookLog.source_id) && hookLog.fk_hook_id) {
-      const hook = await Hook.get(hookLog.fk_hook_id, ncMeta);
-      insertObj.base_id = hook.base_id;
+    const hook = await Hook.get(hookLog.fk_hook_id, ncMeta);
+
+    if (!hookLog.source_id) {
       insertObj.source_id = hook.source_id;
     }
 
@@ -97,7 +98,12 @@ export default class HookLog implements HookLogType {
 
     insertObj.execution_time = parseInt(insertObj.execution_time) || 0;
 
-    return await ncMeta.metaInsert2(null, null, MetaTable.HOOK_LOGS, insertObj);
+    return await ncMeta.metaInsert2(
+      hook.fk_workspace_id,
+      hook.base_id,
+      MetaTable.HOOK_LOGS,
+      insertObj,
+    );
   }
 
   public static async count(

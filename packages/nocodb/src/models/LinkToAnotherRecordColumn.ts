@@ -10,6 +10,10 @@ import { View } from '~/models/index';
 
 export default class LinkToAnotherRecordColumn {
   id: string;
+
+  fk_workspace_id?: string;
+  base_id?: string;
+
   fk_column_id: string;
   fk_child_column_id?: string;
   fk_parent_column_id?: string;
@@ -112,7 +116,15 @@ export default class LinkToAnotherRecordColumn {
       'fk_related_model_id',
       'virtual',
     ]);
-    await ncMeta.metaInsert2(null, null, MetaTable.COL_RELATIONS, insertObj);
+
+    const column = await Column.get({ colId: insertObj.fk_column_id }, ncMeta);
+
+    await ncMeta.metaInsert2(
+      column.fk_workspace_id,
+      column.base_id,
+      MetaTable.COL_RELATIONS,
+      insertObj,
+    );
     return this.read(data.fk_column_id, ncMeta);
   }
 

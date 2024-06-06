@@ -141,12 +141,15 @@ export class FiltersService {
     return filter;
   }
 
-  async linkFilterCreate(_param: {
-    filter: any;
-    columnId: string;
-    user: UserType;
-    req: NcRequest;
-  }): Promise<any> {
+  async linkFilterCreate(
+    _context: NcContext,
+    _param: {
+      filter: any;
+      columnId: string;
+      user: UserType;
+      req: NcRequest;
+    },
+  ): Promise<any> {
     // placeholder method
     return null;
   }

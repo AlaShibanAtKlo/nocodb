@@ -64,7 +64,7 @@ export default class Store {
         key: store.key,
       });
     } else {
-      await ncMeta.metaInsert(null, null, MetaTable.STORE, insertObj);
+      await ncMeta.metaInsert2(null, null, MetaTable.STORE, insertObj);
     }
     if (store.key) await NocoCache.del(`${CacheScope.STORE}:${store.key}`);
   }

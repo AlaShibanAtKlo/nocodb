@@ -91,7 +91,7 @@ export default class Hook implements HookType {
     let { list: hooks } = cachedList;
     const { isNoneList } = cachedList;
     if (!isNoneList && !hooks.length) {
-      hooks = await ncMeta.metaList(null, null, MetaTable.HOOKS, {
+      hooks = await ncMeta.metaList2(null, null, MetaTable.HOOKS, {
         condition: {
           fk_model_id: param.fk_model_id,
           // ...(param.event ? { event: param.event?.toLowerCase?.() } : {}),

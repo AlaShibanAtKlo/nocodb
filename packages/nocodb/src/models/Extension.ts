@@ -51,7 +51,7 @@ export default class Extension {
     let { list: extensionList } = cachedList;
     const { isNoneList } = cachedList;
     if (!isNoneList && !extensionList.length) {
-      extensionList = await ncMeta.metaList(null, null, MetaTable.EXTENSIONS, {
+      extensionList = await ncMeta.metaList2(null, null, MetaTable.EXTENSIONS, {
         condition: {
           base_id: baseId,
         },

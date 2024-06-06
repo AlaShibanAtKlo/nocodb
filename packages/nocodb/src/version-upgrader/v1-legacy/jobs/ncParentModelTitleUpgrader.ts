@@ -1,16 +1,11 @@
 import type { NcBuilderUpgraderCtx } from '../BaseApiBuilder';
 
 export default async function (ctx: NcBuilderUpgraderCtx) {
-  const views = await ctx.xcMeta.metaList(
-    ctx.baseId,
-    ctx.dbAlias,
-    'nc_models',
-    {
-      condition: {
-        type: 'vtable',
-      },
+  const views = await ctx.xcMeta.metaList2(ctx.baseId, null, 'nc_models', {
+    condition: {
+      type: 'vtable',
     },
-  );
+  });
 
   for (const view of views) {
     await ctx.xcMeta.metaUpdate(

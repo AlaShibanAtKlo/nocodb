@@ -15,7 +15,7 @@ export default class SyncLogs {
   }
 
   static async list(baseId: string, ncMeta = Noco.ncMeta) {
-    const syncLogs = await ncMeta.metaList(null, null, MetaTable.SYNC_LOGS, {
+    const syncLogs = await ncMeta.metaList2(null, null, MetaTable.SYNC_LOGS, {
       condition: {
         base_id: baseId,
       },

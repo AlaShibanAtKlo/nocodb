@@ -339,72 +339,10 @@ export class MetaService {
     return (+(await query.first())?.order || 0) + 1;
   }
 
-  public async metaInsert(
-    base_id: string,
-    dbAlias: string,
-    target: string,
-    data: any,
-  ): Promise<any> {
-    return this.knexConnection(target).insert({
-      db_alias: dbAlias,
-      base_id,
-      ...data,
-      created_at: this.now(),
-      updated_at: this.now(),
-    });
-  }
-
-  public async metaList(
-    base_id: string,
-    _dbAlias: string,
-    target: string,
-    args?: {
-      condition?: { [p: string]: any };
-      limit?: number;
-      offset?: number;
-      xcCondition?: Condition;
-      fields?: string[];
-      orderBy?: { [key: string]: 'asc' | 'desc' };
-    },
-  ): Promise<any[]> {
-    const query = this.knexConnection(target);
-
-    if (base_id !== null && base_id !== undefined) {
-      query.where('base_id', base_id);
-    }
-    /*    if (dbAlias !== null && dbAlias !== undefined) {
-      query.where('db_alias', dbAlias);
-    }*/
-
-    if (args?.condition) {
-      query.where(args.condition);
-    }
-    if (args?.limit) {
-      query.limit(args.limit);
-    }
-    if (args?.offset) {
-      query.offset(args.offset);
-    }
-    if (args?.xcCondition) {
-      (query as any).condition(args.xcCondition);
-    }
-
-    if (args?.orderBy) {
-      for (const [col, dir] of Object.entries(args.orderBy)) {
-        query.orderBy(col, dir);
-      }
-    }
-    if (args?.fields?.length) {
-      query.select(...args.fields);
-    }
-
-    return query;
-  }
-
   /***
    * Get list of meta data
    * @param base_id - Base id
-   * @param dbAlias - Database alias
+   * @param source_id - Database alias
    * @param target - Table name
    * @param args.condition - Condition to be applied
    * @param args.limit - Limit of records
@@ -416,7 +354,7 @@ export class MetaService {
    * */
   public async metaList2(
     base_id: string,
-    dbAlias: string,
+    source_id: string,
     target: string,
     args?: {
       condition?: { [p: string]: any };
@@ -432,8 +370,8 @@ export class MetaService {
     if (base_id !== null && base_id !== undefined) {
       query.where('base_id', base_id);
     }
-    if (dbAlias !== null && dbAlias !== undefined) {
-      query.where('source_id', dbAlias);
+    if (source_id !== null && source_id !== undefined) {
+      query.where('source_id', source_id);
     }
 
     if (args?.condition) {

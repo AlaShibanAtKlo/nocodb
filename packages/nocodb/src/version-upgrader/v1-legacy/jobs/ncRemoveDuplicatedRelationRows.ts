@@ -2,9 +2,9 @@ import type { NcBuilderUpgraderCtx } from '../BaseApiBuilder';
 
 export default async function (ctx: NcBuilderUpgraderCtx) {
   try {
-    const relations = await ctx.xcMeta.metaList(
+    const relations = await ctx.xcMeta.metaList2(
       ctx.baseId,
-      ctx.dbAlias,
+      null,
       'nc_relations',
     );
 

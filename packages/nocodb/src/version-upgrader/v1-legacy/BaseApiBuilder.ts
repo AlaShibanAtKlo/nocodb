@@ -221,12 +221,13 @@ export default abstract class BaseApiBuilder<T extends Noco> {
       const configObj: NcConfig = JSON.parse(JSON.stringify(this.config));
       delete configObj.envs;
       const isOld = (
-        await this.xcMeta.metaList(this.baseId, this.dbAlias, 'nc_models')
+        await this.xcMeta.metaList2(this.baseId, null, 'nc_models')
       )?.length;
       configObj.version = isOld ? '0009000' : process.env.NC_VERSION;
-      await this.xcMeta.metaInsert(this.baseId, this.dbAlias, 'nc_store', {
+      await this.xcMeta.metaInsert2(this.baseId, null, 'nc_store', {
         key: 'NC_CONFIG',
         value: JSON.stringify(configObj),
+        dbAlias: this.dbAlias,
       });
       if (isOld) {
         await this.xcUpgrade();
@@ -340,17 +341,12 @@ export default abstract class BaseApiBuilder<T extends Noco> {
   }
 
   protected async ncUpManyToMany(_ctx: any): Promise<any> {
-    const models = await this.xcMeta.metaList(
-      this.baseId,
-      this.dbAlias,
-      'nc_models',
-      {
-        fields: ['meta'],
-        condition: {
-          type: 'table',
-        },
+    const models = await this.xcMeta.metaList2(this.baseId, null, 'nc_models', {
+      fields: ['meta'],
+      condition: {
+        type: 'table',
       },
-    );
+    });
     if (!models.length) {
       return;
     }

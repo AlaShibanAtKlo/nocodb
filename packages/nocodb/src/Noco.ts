@@ -151,7 +151,7 @@ export default class Noco {
           })
         )?.value;
         if (!secret) {
-          await this._ncMeta.metaInsert('', '', MetaTable.STORE, {
+          await this._ncMeta.metaInsert2(null, null, MetaTable.STORE, {
             key: 'nc_auth_jwt_secret',
             value: (secret = uuidv4()),
           });
@@ -171,7 +171,7 @@ export default class Noco {
       })
     )?.value;
     if (!serverId) {
-      await this._ncMeta.metaInsert('', '', MetaTable.STORE, {
+      await this._ncMeta.metaInsert2(null, null, MetaTable.STORE, {
         key: 'nc_server_id',
         value: (serverId = T.id),
       });

@@ -31,17 +31,12 @@ export class GqlApiBuilder extends BaseApiBuilder<Noco> implements XcMetaMgr {
   }
 
   protected async ncUpAddNestedResolverArgs(_ctx: any): Promise<any> {
-    const models = await this.xcMeta.metaList(
-      this.baseId,
-      this.dbAlias,
-      'nc_models',
-      {
-        fields: ['meta'],
-        condition: {
-          type: 'table',
-        },
+    const models = await this.xcMeta.metaList2(this.baseId, null, 'nc_models', {
+      fields: ['meta'],
+      condition: {
+        type: 'table',
       },
-    );
+    });
     if (!models.length) {
       return;
     }
@@ -129,18 +124,14 @@ export class GqlApiBuilder extends BaseApiBuilder<Noco> implements XcMetaMgr {
 
       if (meta.manyToMany) {
         for (const mm of meta.manyToMany) {
-          await this.xcMeta.metaInsert(
-            this.baseId,
-            this.dbAlias,
-            'nc_loaders',
-            {
-              title: `${mm.tn}Mm${mm.rtn}List`,
-              parent: mm.tn,
-              child: mm.rtn,
-              relation: 'mm',
-              resolver: 'mmlist',
-            },
-          );
+          await this.xcMeta.metaInsert2(this.baseId, null, 'nc_loaders', {
+            title: `${mm.tn}Mm${mm.rtn}List`,
+            parent: mm.tn,
+            child: mm.rtn,
+            relation: 'mm',
+            resolver: 'mmlist',
+            dbAlias: this.dbAlias,
+          });
         }
       }
     }

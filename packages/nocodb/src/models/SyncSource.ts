@@ -42,7 +42,7 @@ export default class SyncSource {
     const condition = sourceId
       ? { base_id: baseId, source_id: sourceId }
       : { base_id: baseId };
-    const syncSources = await ncMeta.metaList(
+    const syncSources = await ncMeta.metaList2(
       null,
       null,
       MetaTable.SYNC_SOURCE,

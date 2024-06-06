@@ -58,7 +58,7 @@ export default class Notification {
       'fk_user_id',
     ]);
 
-    const notifications = await ncMeta.metaList(
+    const notifications = await ncMeta.metaList2(
       null,
       null,
       MetaTable.NOTIFICATION,

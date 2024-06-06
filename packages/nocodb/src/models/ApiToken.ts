@@ -28,7 +28,7 @@ export default class ApiToken implements ApiTokenType {
     ncMeta = Noco.ncMeta,
   ) {
     const token = nanoid(40);
-    await ncMeta.metaInsert(null, null, MetaTable.API_TOKENS, {
+    await ncMeta.metaInsert2(null, null, MetaTable.API_TOKENS, {
       description: apiToken.description,
       token,
       fk_user_id: apiToken.fk_user_id,
@@ -46,7 +46,7 @@ export default class ApiToken implements ApiTokenType {
   static async list(userId: string, ncMeta = Noco.ncMeta) {
     // let tokens = await NocoCache.getList(CacheScope.API_TOKEN, []);
     // if (!tokens.length) {
-    const tokens = await ncMeta.metaList(null, null, MetaTable.API_TOKENS, {
+    const tokens = await ncMeta.metaList2(null, null, MetaTable.API_TOKENS, {
       condition: { fk_user_id: userId },
     });
     // await NocoCache.setList(CacheScope.API_TOKEN, [], tokens);

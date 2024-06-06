@@ -71,10 +71,45 @@ interface ReusableParams {
 }
 
 async function reuseOrSave(
-  tp: keyof ReusableParams,
+  tp: 'table',
   params: ReusableParams,
   get: () => Promise<any>,
-) {
+): Promise<Model>;
+async function reuseOrSave(
+  tp: 'source',
+  params: ReusableParams,
+  get: () => Promise<any>,
+): Promise<Source>;
+async function reuseOrSave(
+  tp: 'base',
+  params: ReusableParams,
+  get: () => Promise<any>,
+): Promise<Base>;
+async function reuseOrSave(
+  tp: 'dbDriver',
+  params: ReusableParams,
+  get: () => Promise<any>,
+): Promise<CustomKnex>;
+async function reuseOrSave(
+  tp: 'sqlClient',
+  params: ReusableParams,
+  get: () => Promise<any>,
+): Promise<ReturnType<typeof NcConnectionMgrv2.getSqlClient>>;
+async function reuseOrSave(
+  tp: 'sqlMgr',
+  params: ReusableParams,
+  get: () => Promise<any>,
+): Promise<SqlMgrv2>;
+async function reuseOrSave(
+  tp: 'baseModel',
+  params: ReusableParams,
+  get: () => Promise<any>,
+): Promise<BaseModelSqlv2>;
+async function reuseOrSave(
+  tp: string,
+  params: ReusableParams,
+  get: () => Promise<any>,
+): Promise<any> {
   if (params[tp]) {
     return params[tp];
   }
@@ -263,7 +298,7 @@ export class ColumnsService {
             formula: colBody.formula || colBody.formula_raw,
             columns: table.columns,
             column,
-            clientOrSqlUi: source.type,
+            clientOrSqlUi: source.type as any,
             getMeta: async (modelId) => {
               const model = await Model.get(context, modelId);
               await model.getColumns(context);
@@ -493,10 +528,12 @@ export class ColumnsService {
           );
 
           const data = await baseModel.execAndParse(
-            baseModel.dbDriver.raw('SELECT DISTINCT ?? FROM ??', [
-              column.column_name,
-              baseModel.getTnPath(table.table_name),
-            ]),
+            baseModel.dbDriver
+              .raw('SELECT DISTINCT ?? FROM ??', [
+                column.column_name,
+                baseModel.getTnPath(table.table_name),
+              ])
+              .toQuery(),
             null,
             {
               raw: true,
@@ -1450,7 +1487,7 @@ export class ColumnsService {
       });
     }
 
-    await table.getColumns();
+    await table.getColumns(context);
 
     this.appHooksService.emit(AppEvents.COLUMN_UPDATE, {
       table,
@@ -1647,7 +1684,7 @@ export class ColumnsService {
             colOptions: colBody,
           },
           columns: table.columns,
-          clientOrSqlUi: source.type,
+          clientOrSqlUi: source.type as any,
           getMeta: async (modelId) => {
             const model = await Model.get(context, modelId);
             await model.getColumns(context);
@@ -1691,7 +1728,7 @@ export class ColumnsService {
       case UITypes.LastModifiedBy:
         {
           let columnName: string;
-          const columns = await table.getColumns();
+          const columns = await table.getColumns(context);
           // check if column already exists, then just create a new column in meta
           // else create a new column in meta and db
           const existingColumn = columns.find(
@@ -2344,7 +2381,7 @@ export class ColumnsService {
         await Column.delete(context, param.columnId, ncMeta);
       }
     }
-    await table.getColumns(ncMeta);
+    await table.getColumns(context, ncMeta);
 
     const displayValueColumn = mapDefaultDisplayValue(table.columns);
     if (displayValueColumn) {

@@ -57,10 +57,7 @@ export class SourcesService {
     return sources;
   }
 
-  async baseDelete(
-    context: NcContext,
-    param: { sourceId: string; req: NcRequest },
-  ) {
+  async baseDelete(context: NcContext, param: { sourceId: string; req: any }) {
     try {
       const source = await Source.get(context, param.sourceId, true);
       await source.delete(context);
@@ -90,7 +87,7 @@ export class SourcesService {
       baseId: string;
       source: BaseReqType;
       logger?: (message: string) => void;
-      req: NcRequest;
+      req: any;
     },
   ): Promise<{
     source: Source;

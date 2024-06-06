@@ -7,7 +7,6 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { Acl } from '~/middlewares/extract-ids/extract-ids.middleware';
 import { NcError } from '~/helpers/catchError';
@@ -30,7 +29,11 @@ export class MetaSyncController {
   ])
   @HttpCode(200)
   @Acl('metaDiffSync')
-  async metaDiffSync(@Param('baseId') baseId: string, @Req() req: Request) {
+  async metaDiffSync(
+    @TenantContext() context: NcContext,
+    @Param('baseId') baseId: string,
+    @Req() req: NcRequest,
+  ) {
     const jobs = await this.jobsService.jobList();
     const fnd = jobs.find(
       (j) => j.name === JobTypes.MetaSync && j.data.baseId === baseId,
@@ -41,6 +44,7 @@ export class MetaSyncController {
     }
 
     const job = await this.jobsService.add(JobTypes.MetaSync, {
+      context,
       baseId,
       sourceId: 'all',
       user: req.user,
@@ -61,9 +65,10 @@ export class MetaSyncController {
   @HttpCode(200)
   @Acl('baseMetaDiffSync')
   async baseMetaDiffSync(
+    @TenantContext() context: NcContext,
     @Param('baseId') baseId: string,
     @Param('sourceId') sourceId: string,
-    @Req() req: Request,
+    @Req() req: NcRequest,
   ) {
     const jobs = await this.jobsService.jobList();
     const fnd = jobs.find(
@@ -78,6 +83,7 @@ export class MetaSyncController {
     }
 
     const job = await this.jobsService.add(JobTypes.MetaSync, {
+      context,
       baseId,
       sourceId,
       user: req.user,

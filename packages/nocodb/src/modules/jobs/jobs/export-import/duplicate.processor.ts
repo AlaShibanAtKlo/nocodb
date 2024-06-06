@@ -36,10 +36,9 @@ export class DuplicateProcessor {
 
     const hrTime = initTime();
 
-    const { workspaceId, baseId, sourceId, dupProjectId, req, options } =
-      job.data;
+    const { context, sourceId, dupProjectId, req, options } = job.data;
 
-    const context = { workspace_id: workspaceId, base_id: baseId };
+    const baseId = context.base_id;
 
     const excludeData = options?.excludeData || false;
     const excludeHooks = options?.excludeHooks || false;
@@ -82,7 +81,7 @@ export class DuplicateProcessor {
 
       const dupBase = dupProject.sources[0];
 
-      const idMap = await this.importService.importModels({
+      const idMap = await this.importService.importModels(context, {
         user,
         baseId: dupProject.id,
         sourceId: dupBase.id,
@@ -107,7 +106,7 @@ export class DuplicateProcessor {
         });
       }
 
-      await this.projectsService.baseUpdate({
+      await this.projectsService.baseUpdate(context, {
         baseId: dupProject.id,
         base: {
           status: null,
@@ -117,7 +116,7 @@ export class DuplicateProcessor {
       });
     } catch (e) {
       if (dupProject?.id) {
-        await this.projectsService.baseSoftDelete({
+        await this.projectsService.baseSoftDelete(context, {
           baseId: dupProject.id,
           user: req.user,
           req,
@@ -135,10 +134,9 @@ export class DuplicateProcessor {
 
     const hrTime = initTime();
 
-    const { workspaceId, baseId, sourceId, modelId, title, req, options } =
-      job.data;
+    const { context, sourceId, modelId, title, req, options } = job.data;
 
-    const context = { workspace_id: workspaceId, base_id: baseId };
+    const baseId = context.base_id;
 
     const excludeData = options?.excludeData || false;
     const excludeHooks = options?.excludeHooks || false;
@@ -186,7 +184,7 @@ export class DuplicateProcessor {
     exportedModel.model.title = title;
     exportedModel.model.table_name = title.toLowerCase().replace(/ /g, '_');
 
-    const idMap = await this.importService.importModels({
+    const idMap = await this.importService.importModels(context, {
       baseId,
       sourceId,
       data: [exportedModel],
@@ -319,7 +317,7 @@ export class DuplicateProcessor {
 
     Object.assign(replacedColumn, extra);
 
-    const idMap = await this.importService.importModels({
+    const idMap = await this.importService.importModels(context, {
       baseId,
       sourceId: source.id,
       data: [exportedModel],
@@ -384,7 +382,7 @@ export class DuplicateProcessor {
 
     // update cdf
     if (!isVirtualCol(destColumn)) {
-      await this.columnsService.columnUpdate({
+      await this.columnsService.columnUpdate(context, {
         columnId: findWithIdentifier(idMap, sourceColumn.id),
         column: {
           ...destColumn,
@@ -461,7 +459,7 @@ export class DuplicateProcessor {
         findWithIdentifier(idMap, sourceModel.id),
       );
 
-      await this.importService.importDataFromCsvStream({
+      await this.importService.importDataFromCsvStream(context, {
         idMap,
         dataStream,
         destProject,
@@ -469,7 +467,7 @@ export class DuplicateProcessor {
         destModel: model,
       });
 
-      handledLinks = await this.importService.importLinkFromCsvStream({
+      handledLinks = await this.importService.importLinkFromCsvStream(context, {
         idMap,
         linkStream,
         destProject,
@@ -583,7 +581,7 @@ export class DuplicateProcessor {
                       // remove empty rows (only pk is present)
                       chunk = chunk.filter((r) => Object.keys(r).length > 1);
                       if (chunk.length > 0) {
-                        await this.bulkDataService.bulkDataUpdate({
+                        await this.bulkDataService.bulkDataUpdate(context, {
                           baseName: destProject.id,
                           tableName: model.id,
                           body: chunk,
@@ -606,7 +604,7 @@ export class DuplicateProcessor {
                   // remove empty rows (only pk is present)
                   chunk = chunk.filter((r) => Object.keys(r).length > 1);
                   if (chunk.length > 0) {
-                    await this.bulkDataService.bulkDataUpdate({
+                    await this.bulkDataService.bulkDataUpdate(context, {
                       baseName: destProject.id,
                       tableName: model.id,
                       body: chunk,
@@ -626,13 +624,16 @@ export class DuplicateProcessor {
 
         if (error) throw error;
 
-        handledLinks = await this.importService.importLinkFromCsvStream({
-          idMap,
-          linkStream,
-          destProject,
-          destBase,
-          handledLinks,
-        });
+        handledLinks = await this.importService.importLinkFromCsvStream(
+          context,
+          {
+            idMap,
+            linkStream,
+            destProject,
+            destBase,
+            handledLinks,
+          },
+        );
 
         elapsedTime(
           hrTime,

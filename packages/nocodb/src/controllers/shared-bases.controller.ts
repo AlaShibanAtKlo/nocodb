@@ -10,7 +10,6 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { SharedBasesService } from '~/services/shared-bases.service';
 import { Acl } from '~/middlewares/extract-ids/extract-ids.middleware';
@@ -30,17 +29,21 @@ export class SharedBasesController {
   @HttpCode(200)
   @Acl('createSharedBaseLink')
   async createSharedBaseLink(
-    @Req() req: Request,
+    @TenantContext() context: NcContext,
+    @Req() req: NcRequest,
     @Body() body: any,
     @Param('baseId') baseId: string,
   ): Promise<any> {
-    const sharedBase = await this.sharedBasesService.createSharedBaseLink({
-      baseId: baseId,
-      roles: body?.roles,
-      password: body?.password,
-      siteUrl: req.ncSiteUrl,
-      req,
-    });
+    const sharedBase = await this.sharedBasesService.createSharedBaseLink(
+      context,
+      {
+        baseId: baseId,
+        roles: body?.roles,
+        password: body?.password,
+        siteUrl: req.ncSiteUrl,
+        req,
+      },
+    );
 
     return sharedBase;
   }
@@ -51,17 +54,21 @@ export class SharedBasesController {
   ])
   @Acl('updateSharedBaseLink')
   async updateSharedBaseLink(
-    @Req() req: Request,
+    @TenantContext() context: NcContext,
+    @Req() req: NcRequest,
     @Body() body: any,
     @Param('baseId') baseId: string,
   ): Promise<any> {
-    const sharedBase = await this.sharedBasesService.updateSharedBaseLink({
-      baseId: baseId,
-      roles: body?.roles,
-      password: body?.password,
-      siteUrl: req.ncSiteUrl,
-      req,
-    });
+    const sharedBase = await this.sharedBasesService.updateSharedBaseLink(
+      context,
+      {
+        baseId: baseId,
+        roles: body?.roles,
+        password: body?.password,
+        siteUrl: req.ncSiteUrl,
+        req,
+      },
+    );
 
     return sharedBase;
   }
@@ -72,13 +79,17 @@ export class SharedBasesController {
   ])
   @Acl('disableSharedBaseLink')
   async disableSharedBaseLink(
+    @TenantContext() context: NcContext,
     @Param('baseId') baseId: string,
-    @Req() req: Request,
+    @Req() req: NcRequest,
   ): Promise<any> {
-    const sharedBase = await this.sharedBasesService.disableSharedBaseLink({
-      baseId,
-      req,
-    });
+    const sharedBase = await this.sharedBasesService.disableSharedBaseLink(
+      context,
+      {
+        baseId,
+        req,
+      },
+    );
 
     return sharedBase;
   }
@@ -89,13 +100,17 @@ export class SharedBasesController {
   ])
   @Acl('getSharedBaseLink')
   async getSharedBaseLink(
-    @Req() req: Request,
+    @TenantContext() context: NcContext,
+    @Req() req: NcRequest,
     @Param('baseId') baseId: string,
   ): Promise<any> {
-    const sharedBase = await this.sharedBasesService.getSharedBaseLink({
-      baseId: baseId,
-      siteUrl: req.ncSiteUrl,
-    });
+    const sharedBase = await this.sharedBasesService.getSharedBaseLink(
+      context,
+      {
+        baseId: baseId,
+        siteUrl: req.ncSiteUrl,
+      },
+    );
 
     return sharedBase;
   }

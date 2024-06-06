@@ -70,7 +70,7 @@ export class CommentsService {
       user: param.user,
       comment: comment.comment,
       rowId: comment.row_id,
-      req: {},
+      req: {} as any,
     });
     return res;
   }

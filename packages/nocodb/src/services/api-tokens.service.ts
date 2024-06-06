@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AppEvents, extractRolesObj, OrgUserRoles } from 'nocodb-sdk';
 import type { User } from '~/models';
 import type { ApiTokenReqType } from 'nocodb-sdk';
-import type { NcContext, NcRequest } from '~/interface/config';
+import type { NcRequest } from '~/interface/config';
 import { AppHooksService } from '~/services/app-hooks/app-hooks.service';
 import { NcError } from '~/helpers/catchError';
 import { validatePayload } from '~/helpers';
@@ -12,7 +12,7 @@ import { ApiToken } from '~/models';
 export class ApiTokensService {
   constructor(protected readonly appHooksService: AppHooksService) {}
 
-  async apiTokenList(param: { userId: string; context: NcContext }) {
+  async apiTokenList(param: { userId: string }) {
     return await ApiToken.list(param.userId);
   }
   async apiTokenCreate(param: {

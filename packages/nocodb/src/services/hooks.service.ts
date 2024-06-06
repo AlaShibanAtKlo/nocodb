@@ -174,9 +174,19 @@ export class HooksService {
     );
 
     if (param.version === 'v1') {
-      return await populateSamplePayload(model, false, param.operation);
+      return await populateSamplePayload(
+        context,
+        model,
+        false,
+        param.operation,
+      );
     }
-    return await populateSamplePayloadV2(model, false, param.operation);
+    return await populateSamplePayloadV2(
+      context,
+      model,
+      false,
+      param.operation,
+    );
   }
 
   async hookLogCount(context: NcContext, param: { hookId: string }) {

@@ -16,15 +16,13 @@ import hash from 'object-hash';
 import moment from 'moment';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
-import type { Request } from 'express';
 import type { AttachmentReqType, FileType } from 'nocodb-sdk';
+import type { NcRequest } from '~/interface/config';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { AttachmentsService } from '~/services/attachments.service';
 import { PresignedUrl } from '~/models';
 import { UploadAllowedInterceptor } from '~/interceptors/is-upload-allowed/is-upload-allowed.interceptor';
 import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
-import { TenantContext } from '~/decorators/tenant-context.decorator';
-import { NcContext, NcRequest } from '~/interface/config';
 
 @Controller()
 export class AttachmentsSecureController {
@@ -36,7 +34,7 @@ export class AttachmentsSecureController {
   @UseInterceptors(UploadAllowedInterceptor, AnyFilesInterceptor())
   async upload(
     @UploadedFiles() files: Array<FileType>,
-    @Req() req: Request & { user: { id: string } },
+    @Req() req: NcRequest & { user: { id: string } },
   ) {
     const path = `${moment().format('YYYY/MM/DD')}/${hash(req.user.id)}`;
 
@@ -55,7 +53,7 @@ export class AttachmentsSecureController {
   @UseGuards(MetaApiLimiterGuard, GlobalGuard)
   async uploadViaURL(
     @Body() body: Array<AttachmentReqType>,
-    @Req() req: Request & { user: { id: string } },
+    @Req() req: NcRequest & { user: { id: string } },
   ) {
     const path = `${moment().format('YYYY/MM/DD')}/${hash(req.user.id)}`;
 

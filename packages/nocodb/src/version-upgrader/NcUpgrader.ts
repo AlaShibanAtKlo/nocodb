@@ -43,9 +43,14 @@ export default class NcUpgrader {
       }
       this.log(`upgrade : Getting configuration from meta database`);
 
-      const config = await ctx.ncMeta.metaGet('', '', 'nc_store', {
-        key: this.STORE_KEY,
-      });
+      const config = await ctx.ncMeta.metaGet(
+        RootScopes.ROOT,
+        RootScopes.ROOT,
+        'nc_store',
+        {
+          key: this.STORE_KEY,
+        },
+      );
 
       const NC_VERSIONS: any[] = this.getUpgraderList();
 
@@ -66,8 +71,8 @@ export default class NcUpgrader {
               // update version in meta after each upgrade
               config.version = version.name;
               await ctx.ncMeta.metaUpdate(
-                context.workspace_id,
-                context.base_id,
+                RootScopes.ROOT,
+                RootScopes.ROOT,
                 'nc_store',
                 {
                   value: JSON.stringify({ version: config.version }),
@@ -93,8 +98,8 @@ export default class NcUpgrader {
           (await ctx.ncMeta.baseList())?.length;
         configObj.version = isOld ? '0009000' : process.env.NC_VERSION;
         await ctx.ncMeta.metaInsert2(
-          context.workspace_id,
-          context.base_id,
+          RootScopes.ROOT,
+          RootScopes.ROOT,
           'nc_store',
           {
             key: NcUpgrader.STORE_KEY,

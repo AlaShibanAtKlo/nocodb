@@ -9,14 +9,12 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { PagedResponseImpl } from '~/helpers/PagedResponse';
 import { ApiTokensService } from '~/services/api-tokens.service';
 import { Acl } from '~/middlewares/extract-ids/extract-ids.middleware';
 import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
-import { TenantContext } from '~/decorators/tenant-context.decorator';
-import { NcContext, NcRequest } from '~/interface/config';
+import { NcRequest } from '~/interface/config';
 
 @Controller()
 @UseGuards(MetaApiLimiterGuard, GlobalGuard)
@@ -28,7 +26,7 @@ export class ApiTokensController {
     '/api/v2/meta/bases/:baseId/api-tokens',
   ])
   @Acl('baseApiTokenList')
-  async apiTokenList(@Req() req: Request) {
+  async apiTokenList(@Req() req: NcRequest) {
     return new PagedResponseImpl(
       await this.apiTokensService.apiTokenList({ userId: req['user'].id }),
     );
@@ -40,7 +38,7 @@ export class ApiTokensController {
   ])
   @HttpCode(200)
   @Acl('baseApiTokenCreate')
-  async apiTokenCreate(@Req() req: Request, @Body() body) {
+  async apiTokenCreate(@Req() req: NcRequest, @Body() body) {
     return await this.apiTokensService.apiTokenCreate({
       tokenBody: body,
       userId: req['user'].id,
@@ -53,7 +51,7 @@ export class ApiTokensController {
     '/api/v2/meta/bases/:baseId/api-tokens/:token',
   ])
   @Acl('baseApiTokenDelete')
-  async apiTokenDelete(@Req() req: Request, @Param('token') token: string) {
+  async apiTokenDelete(@Req() req: NcRequest, @Param('token') token: string) {
     return await this.apiTokensService.apiTokenDelete({
       token,
       user: req['user'],

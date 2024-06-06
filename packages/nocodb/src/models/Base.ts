@@ -44,7 +44,6 @@ export default class Base implements BaseType {
   }
 
   public static async createProject(
-    context: NcContext,
     base: Partial<BaseType>,
     ncMeta = Noco.ncMeta,
   ): Promise<Base> {
@@ -71,11 +70,16 @@ export default class Base implements BaseType {
     }
 
     const { id: baseId } = await ncMeta.metaInsert2(
-      context.workspace_id,
-      context.base_id,
+      RootScopes.BASE,
+      RootScopes.BASE,
       MetaTable.PROJECT,
       insertObj,
     );
+
+    const context = {
+      workspace_id: (base as any).fk_workspace_id,
+      base_id: baseId,
+    };
 
     for (const source of base.sources) {
       await Source.createBase(

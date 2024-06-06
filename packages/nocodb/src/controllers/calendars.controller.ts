@@ -9,7 +9,6 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { ViewCreateReqType } from 'nocodb-sdk';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { CalendarsService } from '~/services/calendars.service';
@@ -28,8 +27,11 @@ export class CalendarsController {
     '/api/v2/meta/calendars/:calendarViewId',
   ])
   @Acl('calendarViewGet')
-  async calendarViewGet(@Param('calendarViewId') calendarViewId: string) {
-    return await this.calendarsService.calendarViewGet({
+  async calendarViewGet(
+    @TenantContext() context: NcContext,
+    @Param('calendarViewId') calendarViewId: string,
+  ) {
+    return await this.calendarsService.calendarViewGet(context, {
       calendarViewId,
     });
   }
@@ -41,11 +43,12 @@ export class CalendarsController {
   @HttpCode(200)
   @Acl('calendarViewCreate')
   async calendarViewCreate(
+    @TenantContext() context: NcContext,
     @Param('tableId') tableId: string,
     @Body() body: ViewCreateReqType,
-    @Req() req: Request,
+    @Req() req: NcRequest,
   ) {
-    return await this.calendarsService.calendarViewCreate({
+    return await this.calendarsService.calendarViewCreate(context, {
       tableId,
       calendar: body,
       user: req.user,
@@ -59,11 +62,12 @@ export class CalendarsController {
   ])
   @Acl('calendarViewUpdate')
   async calendarViewUpdate(
+    @TenantContext() context: NcContext,
     @Param('calendarViewId') calendarViewId: string,
     @Body() body,
-    @Req() req: Request,
+    @Req() req: NcRequest,
   ) {
-    return await this.calendarsService.calendarViewUpdate({
+    return await this.calendarsService.calendarViewUpdate(context, {
       calendarViewId,
       calendar: body,
       req,

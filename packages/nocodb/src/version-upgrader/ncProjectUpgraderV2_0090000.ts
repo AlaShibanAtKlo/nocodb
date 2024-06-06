@@ -32,7 +32,8 @@ import FormViewColumn from '~/models/FormViewColumn';
 import GridViewColumn from '~/models/GridViewColumn';
 import Audit from '~/models/Audit';
 
-export default async function (ctx: NcUpgraderCtx) {
+export default async function (_ctx: NcUpgraderCtx) {
+  /* TODO : decide on how to handle migrating from very old versions
   const ncMeta = ctx.ncMeta;
 
   const bases = await ctx.ncMeta.baseList();
@@ -1324,4 +1325,5 @@ async function migrateAutitLog(
 
     await Audit.insert(insertObj, ncMeta);
   }
+  */
 }

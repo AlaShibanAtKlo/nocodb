@@ -146,9 +146,14 @@ export default class Noco {
     if (this.config?.auth?.jwt) {
       if (!this.config.auth.jwt.secret) {
         let secret = (
-          await this._ncMeta.metaGet('', '', MetaTable.STORE, {
-            key: 'nc_auth_jwt_secret',
-          })
+          await this._ncMeta.metaGet(
+            RootScopes.ROOT,
+            RootScopes.ROOT,
+            MetaTable.STORE,
+            {
+              key: 'nc_auth_jwt_secret',
+            },
+          )
         )?.value;
         if (!secret) {
           await this._ncMeta.metaInsert2(
@@ -172,9 +177,14 @@ export default class Noco {
       }
     }
     let serverId = (
-      await this._ncMeta.metaGet('', '', MetaTable.STORE, {
-        key: 'nc_server_id',
-      })
+      await this._ncMeta.metaGet(
+        RootScopes.ROOT,
+        RootScopes.ROOT,
+        MetaTable.STORE,
+        {
+          key: 'nc_server_id',
+        },
+      )
     )?.value;
     if (!serverId) {
       await this._ncMeta.metaInsert2(

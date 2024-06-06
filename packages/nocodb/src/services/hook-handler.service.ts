@@ -119,6 +119,7 @@ export class HookHandlerService implements OnModuleInit, OnModuleDestroy {
       if (hook.active) {
         try {
           await this.jobsService.add(JobTypes.HandleWebhook, {
+            context,
             hookId: hook.id,
             modelId,
             viewId,

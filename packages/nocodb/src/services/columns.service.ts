@@ -846,7 +846,7 @@ export class ColumnsService {
               };
 
               const sqlMgr = await reuseOrSave('sqlMgr', reuse, async () =>
-                ProjectMgrv2.getSqlMgr({
+                ProjectMgrv2.getSqlMgr(context, {
                   id: source.base_id,
                 }),
               );
@@ -1069,7 +1069,7 @@ export class ColumnsService {
       };
 
       const sqlMgr = await reuseOrSave('sqlMgr', reuse, async () =>
-        ProjectMgrv2.getSqlMgr({ id: source.base_id }),
+        ProjectMgrv2.getSqlMgr(context, { id: source.base_id }),
       );
       await sqlMgr.sqlOpPlus(source, 'tableUpdate', tableUpdateBody);
 
@@ -1204,7 +1204,7 @@ export class ColumnsService {
         };
 
         const sqlMgr = await reuseOrSave('sqlMgr', reuse, async () =>
-          ProjectMgrv2.getSqlMgr({ id: source.base_id }),
+          ProjectMgrv2.getSqlMgr(context, { id: source.base_id }),
         );
         await sqlMgr.sqlOpPlus(source, 'tableUpdate', tableUpdateBody);
 
@@ -1320,7 +1320,7 @@ export class ColumnsService {
         };
 
         const sqlMgr = await reuseOrSave('sqlMgr', reuse, async () =>
-          ProjectMgrv2.getSqlMgr({ id: source.base_id }),
+          ProjectMgrv2.getSqlMgr(context, { id: source.base_id }),
         );
         await sqlMgr.sqlOpPlus(source, 'tableUpdate', tableUpdateBody);
 
@@ -1395,7 +1395,7 @@ export class ColumnsService {
         };
 
         const sqlMgr = await reuseOrSave('sqlMgr', reuse, async () =>
-          ProjectMgrv2.getSqlMgr({ id: source.base_id }),
+          ProjectMgrv2.getSqlMgr(context, { id: source.base_id }),
         );
         await sqlMgr.sqlOpPlus(source, 'tableUpdate', tableUpdateBody);
 
@@ -1441,7 +1441,7 @@ export class ColumnsService {
       };
 
       const sqlMgr = await reuseOrSave('sqlMgr', reuse, async () =>
-        ProjectMgrv2.getSqlMgr({ id: source.base_id }),
+        ProjectMgrv2.getSqlMgr(context, { id: source.base_id }),
       );
       await sqlMgr.sqlOpPlus(source, 'tableUpdate', tableUpdateBody);
 
@@ -1754,7 +1754,7 @@ export class ColumnsService {
                 ],
               };
               const sqlMgr = await reuseOrSave('sqlMgr', reuse, async () =>
-                ProjectMgrv2.getSqlMgr({ id: source.base_id }),
+                ProjectMgrv2.getSqlMgr(context, { id: source.base_id }),
               );
               await sqlMgr.sqlOpPlus(source, 'tableUpdate', tableUpdateBody);
             }
@@ -1973,7 +1973,7 @@ export class ColumnsService {
             NcConnectionMgrv2.getSqlClient(source),
           );
           const sqlMgr = await reuseOrSave('sqlMgr', reuse, async () =>
-            ProjectMgrv2.getSqlMgr({ id: source.base_id }),
+            ProjectMgrv2.getSqlMgr(context, { id: source.base_id }),
           );
           await sqlMgr.sqlOpPlus(source, 'tableUpdate', tableUpdateBody);
 
@@ -2057,7 +2057,7 @@ export class ColumnsService {
     );
 
     const sqlMgr = await reuseOrSave('sqlMgr', reuse, async () =>
-      ProjectMgrv2.getSqlMgr({ id: source.base_id }, ncMeta),
+      ProjectMgrv2.getSqlMgr(context, { id: source.base_id }, ncMeta),
     );
 
     /**
@@ -2706,7 +2706,7 @@ export class ColumnsService {
       : null;
 
     const sqlMgr = await reuseOrSave('sqlMgr', reuse, async () =>
-      ProjectMgrv2.getSqlMgr({
+      ProjectMgrv2.getSqlMgr(context, {
         id: param.source.base_id,
       }),
     );
@@ -3249,7 +3249,9 @@ export class ColumnsService {
 
     const dbDriver = await NcConnectionMgrv2.get(source);
     const sqlClient = await NcConnectionMgrv2.getSqlClient(source);
-    const sqlMgr = await ProjectMgrv2.getSqlMgr({ id: source.base_id });
+    const sqlMgr = await ProjectMgrv2.getSqlMgr(context, {
+      id: source.base_id,
+    });
     const baseModel = await Model.getBaseModelSQL(context, {
       id: table.id,
       dbDriver: dbDriver,

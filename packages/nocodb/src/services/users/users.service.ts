@@ -49,9 +49,14 @@ export class UsersService {
 
   async findOne(_email: string) {
     const email = _email.toLowerCase();
-    const user = await this.metaService.metaGet(context.workspace_id, context.base_id, MetaTable.USERS, {
-      email,
-    });
+    const user = await this.metaService.metaGet(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.USERS,
+      {
+        email,
+      },
+    );
 
     return user;
   }
@@ -67,8 +72,8 @@ export class UsersService {
     lastname: any;
   }) {
     return this.metaService.metaInsert2(
-      context.workspace_id,
-      context.base_id,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.USERS,
       {
         ...param,
@@ -268,9 +273,14 @@ export class UsersService {
   async tokenValidate(param: { token: string }): Promise<any> {
     const token = param.token;
 
-    const user = await Noco.ncMeta.metaGet(context.workspace_id, context.base_id, MetaTable.USERS, {
-      reset_password_token: token,
-    });
+    const user = await Noco.ncMeta.metaGet(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.USERS,
+      {
+        reset_password_token: token,
+      },
+    );
 
     if (!user || !user.email) {
       NcError.badRequest('Invalid reset url');
@@ -294,9 +304,14 @@ export class UsersService {
 
     const { token, body } = param;
 
-    const user = await Noco.ncMeta.metaGet(context.workspace_id, context.base_id, MetaTable.USERS, {
-      reset_password_token: token,
-    });
+    const user = await Noco.ncMeta.metaGet(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.USERS,
+      {
+        reset_password_token: token,
+      },
+    );
 
     if (!user) {
       NcError.badRequest('Invalid reset url');
@@ -342,9 +357,14 @@ export class UsersService {
   }): Promise<any> {
     const { token, req } = param;
 
-    const user = await Noco.ncMeta.metaGet(context.workspace_id, context.base_id, MetaTable.USERS, {
-      email_verification_token: token,
-    });
+    const user = await Noco.ncMeta.metaGet(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.USERS,
+      {
+        email_verification_token: token,
+      },
+    );
 
     if (!user) {
       NcError.badRequest('Invalid verification url');

@@ -269,6 +269,8 @@ export enum RootScopes {
   ORG = 'org',
   WORKSPACE = 'workspace',
   BASE = 'base',
+  // This scope only used for extract-ids middleware to get initial entity
+  BYPASS = 'bypass',
 }
 
 export const RootScopeTables = {

@@ -57,7 +57,7 @@ export class CalendarDatasService {
       id: view.fk_model_id,
     });
 
-    return await this.datasService.dataList({
+    return await this.datasService.dataList(context, {
       ...param,
       ...query,
       viewName: view.id,
@@ -171,7 +171,7 @@ export class CalendarDatasService {
       id: view.fk_model_id,
     });
 
-    const data = await this.datasService.dataList({
+    const data = await this.datasService.dataList(context, {
       ...param,
       baseName: model.base_id,
       tableName: model.id,

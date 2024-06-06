@@ -131,7 +131,7 @@ export class TablesService {
       NcError.badRequest('Duplicate table alias');
     }
 
-    const sqlMgr = await ProjectMgrv2.getSqlMgr(base);
+    const sqlMgr = await ProjectMgrv2.getSqlMgr(context, base);
     const sqlClient = await NcConnectionMgrv2.getSqlClient(source);
 
     let tableNameLengthLimit = 255;
@@ -272,7 +272,7 @@ export class TablesService {
         );
       }
 
-      const sqlMgr = await ProjectMgrv2.getSqlMgr(base, ncMeta);
+      const sqlMgr = await ProjectMgrv2.getSqlMgr(context, base, ncMeta);
       (table as any).tn = table.table_name;
       table.columns = table.columns.filter((c) => !isVirtualCol(c));
       table.columns.forEach((c) => {
@@ -590,7 +590,7 @@ export class TablesService {
       NcError.badRequest('Duplicate table alias');
     }
 
-    const sqlMgr = await ProjectMgrv2.getSqlMgr(base);
+    const sqlMgr = await ProjectMgrv2.getSqlMgr(context, base);
 
     const sqlClient = await NcConnectionMgrv2.getSqlClient(source);
 

@@ -8,7 +8,6 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { BaseReqType } from 'nocodb-sdk';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { Acl } from '~/middlewares/extract-ids/extract-ids.middleware';
@@ -33,9 +32,10 @@ export class SourceCreateController {
   @HttpCode(200)
   @Acl('baseCreate')
   async baseCreate(
+    @TenantContext() context: NcContext,
     @Param('baseId') baseId: string,
     @Body() body: BaseReqType,
-    @Req() req: Request,
+    @Req() req: NcRequest,
   ) {
     const jobs = await this.jobsService.jobList();
     const fnd = jobs.find(
@@ -49,6 +49,7 @@ export class SourceCreateController {
     }
 
     const job = await this.jobsService.add(JobTypes.SourceCreate, {
+      context,
       baseId,
       source: body,
       req: {

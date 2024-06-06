@@ -11,7 +11,7 @@ import { GlobalGuard } from '~/guards/global/global.guard';
 import { Acl } from '~/middlewares/extract-ids/extract-ids.middleware';
 import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
 import { TenantContext } from '~/decorators/tenant-context.decorator';
-import { NcContext, NcRequest } from '~/interface/config';
+import { NcContext } from '~/interface/config';
 
 @Controller()
 @UseGuards(MetaApiLimiterGuard, GlobalGuard)
@@ -24,12 +24,13 @@ export class SqlViewsController {
   ])
   @Acl('sqlViewCreate')
   async sqlViewCreate(
+    @TenantContext() context: NcContext,
     @Param('baseId') baseId: string,
     @Param('sourceId') sourceId: string,
     @Request() req,
     @Body() body,
   ) {
-    const table = await this.sqlViewsService.sqlViewCreate({
+    const table = await this.sqlViewsService.sqlViewCreate(context, {
       clientIp: (req as any).clientIp,
       body,
       baseId,

@@ -10,13 +10,11 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { NotificationsService } from '~/services/notifications.service';
 import { GlobalGuard } from '~/guards/global/global.guard';
 import { extractProps } from '~/helpers/extractProps';
 import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
-import { TenantContext } from '~/decorators/tenant-context.decorator';
-import { NcContext, NcRequest } from '~/interface/config';
+import { NcRequest } from '~/interface/config';
 
 @Controller()
 @UseGuards(MetaApiLimiterGuard, GlobalGuard)
@@ -25,7 +23,7 @@ export class NotificationsController {
 
   @Get('/api/v1/notifications')
   // @Acl('notificationList')
-  async notificationList(@Req() req: Request) {
+  async notificationList(@Req() req: NcRequest) {
     return this.notificationsService.notificationList({
       user: req.user,
       is_deleted: false,
@@ -39,7 +37,7 @@ export class NotificationsController {
   async notificationUpdate(
     @Param('notificationId') notificationId,
     @Body() body,
-    @Req() req: Request,
+    @Req() req: NcRequest,
   ) {
     return this.notificationsService.notificationUpdate({
       notificationId,
@@ -50,7 +48,7 @@ export class NotificationsController {
 
   @Post('/api/v1/notifications/mark-all-read')
   @HttpCode(200)
-  async markAllRead(@Req() req: Request) {
+  async markAllRead(@Req() req: NcRequest) {
     return this.notificationsService.markAllRead({
       user: req.user,
     });
@@ -60,7 +58,7 @@ export class NotificationsController {
   // @Acl('notificationDelete')
   async notificationDelete(
     @Param('notificationId') notificationId,
-    @Req() req: Request,
+    @Req() req: NcRequest,
   ) {
     return this.notificationsService.notificationUpdate({
       notificationId,

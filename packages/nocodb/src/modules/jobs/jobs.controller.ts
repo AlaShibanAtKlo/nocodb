@@ -41,7 +41,7 @@ export class JobsController {
   @HttpCode(200)
   async listen(
     @Res() res: Response & { resId?: string },
-    @Req() req: Request,
+    @Req() req: NcRequest,
     @Body() body: { _mid: number; data: { id: string } },
   ) {
     const { _mid = 0, data } = body;

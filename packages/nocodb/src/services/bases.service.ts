@@ -13,6 +13,7 @@ import type {
   ProjectUpdateReqType,
   UserType,
 } from 'nocodb-sdk';
+import type { Request } from 'express';
 import type { NcContext, NcRequest } from '~/interface/config';
 import { AppHooksService } from '~/services/app-hooks/app-hooks.service';
 import { populateMeta, validatePayload } from '~/helpers';
@@ -138,10 +139,7 @@ export class BasesService {
     return true;
   }
 
-  async baseCreate(
-    context: NcContext,
-    param: { base: ProjectReqType; user: any; req: NcRequest },
-  ) {
+  async baseCreate(param: { base: ProjectReqType; user: any; req: any }) {
     validatePayload('swagger.json#/components/schemas/ProjectReq', param.base);
 
     const baseId = await this.metaService.genNanoid(MetaTable.PROJECT);
@@ -212,7 +210,12 @@ export class BasesService {
     baseBody.title = DOMPurify.sanitize(baseBody.title);
     baseBody.slug = baseBody.title;
 
-    const base = await Base.createProject(context, baseBody);
+    const base = await Base.createProject(baseBody);
+
+    const context = {
+      workspace_id: base.fk_workspace_id,
+      base_id: base.id,
+    };
 
     // TODO: create n:m instances here
     await BaseUser.insert(context, {
@@ -247,11 +250,8 @@ export class BasesService {
     return base;
   }
 
-  async createDefaultBase(
-    context: NcContext,
-    param: { user: UserType; req: NcRequest },
-  ) {
-    const base = await this.baseCreate(context, {
+  async createDefaultBase(param: { user: UserType; req: Request }) {
+    const base = await this.baseCreate({
       base: {
         title: 'Getting Started',
         type: 'database',
@@ -259,6 +259,11 @@ export class BasesService {
       user: param.user,
       req: param.req,
     });
+
+    const context = {
+      workspace_id: base.fk_workspace_id,
+      base_id: base.id,
+    };
 
     const sqlUI = SqlUiFactory.create({ client: base.sources[0].type });
     const columns = sqlUI?.getNewTableColumns() as any;

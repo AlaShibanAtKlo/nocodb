@@ -87,7 +87,7 @@ export class SqlViewsService {
       NcError.badRequest('Duplicate table alias');
     }
 
-    const sqlMgr = await ProjectMgrv2.getSqlMgr(base);
+    const sqlMgr = await ProjectMgrv2.getSqlMgr(context, base);
 
     const sqlClient = await NcConnectionMgrv2.getSqlClient(source);
 

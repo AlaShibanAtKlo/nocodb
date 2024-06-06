@@ -31,7 +31,7 @@ export class DataTableService {
       viewId,
       baseId,
     });
-    return await this.datasService.dataList({ ...rest, model, view });
+    return await this.datasService.dataList(context, { ...rest, model, view });
   }
 
   async dataRead(

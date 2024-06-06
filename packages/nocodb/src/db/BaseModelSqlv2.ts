@@ -4989,6 +4989,7 @@ class BaseModelSqlv2 {
 
   protected async handleHooks(hookName, prevData, newData, req): Promise<void> {
     Noco.eventEmitter.emit(HANDLE_WEBHOOK, {
+      context: this.context,
       hookName,
       prevData,
       newData,

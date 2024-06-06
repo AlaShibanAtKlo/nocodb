@@ -53,6 +53,23 @@ export class MetaService {
     return this.knexConnection;
   }
 
+  public contextCondition(
+    query: Knex.QueryBuilder,
+    workspace_id: string,
+    base_id: string,
+    target: string,
+  ) {
+    if (workspace_id === base_id) {
+      return;
+    }
+
+    if (target !== MetaTable.PROJECT) {
+      query.where('base_id', base_id);
+    } else {
+      query.where('id', base_id);
+    }
+  }
+
   /***
    * Get single record from meta data
    * @param workspace_id - Workspace id
@@ -286,8 +303,6 @@ export class MetaService {
           sql: '',
         });
       }
-
-      query.where('base_id', base_id);
     }
 
     if (typeof idOrCondition !== 'object') {
@@ -304,6 +319,9 @@ export class MetaService {
     if (!force) {
       this.checkConditionPresent(query, 'delete');
     }
+
+    // Apply context condition
+    this.contextCondition(query, workspace_id, base_id, target);
 
     return query.del();
   }
@@ -386,7 +404,7 @@ export class MetaService {
         });
       }
 
-      query.where('base_id', base_id);
+      this.contextCondition(query, workspace_id, base_id, target);
     }
 
     if (!idOrCondition) {
@@ -469,7 +487,7 @@ export class MetaService {
         });
       }
 
-      query.where('base_id', base_id);
+      this.contextCondition(query, workspace_id, base_id, target);
     }
 
     if (args?.condition) {
@@ -541,7 +559,7 @@ export class MetaService {
         });
       }
 
-      query.where('base_id', base_id);
+      this.contextCondition(query, workspace_id, base_id, target);
     }
 
     if (args?.condition) {
@@ -632,8 +650,6 @@ export class MetaService {
           sql: '',
         });
       }
-
-      query.where('base_id', base_id);
     }
 
     delete data.created_at;
@@ -652,6 +668,9 @@ export class MetaService {
     if (!force) {
       this.checkConditionPresent(query, 'update');
     }
+
+    // Apply context condition
+    this.contextCondition(query, workspace_id, base_id, target);
 
     return await query;
   }

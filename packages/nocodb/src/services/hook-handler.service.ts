@@ -139,10 +139,10 @@ export class HookHandlerService implements OnModuleInit, OnModuleDestroy {
   }
 
   onModuleInit(): any {
-    this.unsubscribe = this.eventEmitter.on(
-      HANDLE_WEBHOOK,
-      this.handleHooks.bind(this),
-    );
+    this.unsubscribe = this.eventEmitter.on(HANDLE_WEBHOOK, async (arg) => {
+      const { context, ...rest } = arg;
+      return this.handleHooks(context, rest);
+    });
   }
 
   onModuleDestroy() {

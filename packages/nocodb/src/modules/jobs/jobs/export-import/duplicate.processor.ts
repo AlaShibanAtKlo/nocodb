@@ -245,10 +245,9 @@ export class DuplicateProcessor {
 
     const hrTime = initTime();
 
-    const { workspaceId, baseId, sourceId, columnId, extra, req, options } =
-      job.data;
+    const { context, sourceId, columnId, extra, req, options } = job.data;
 
-    const context = { workspace_id: workspaceId, base_id: baseId };
+    const baseId = context.base_id;
 
     const excludeData = options?.excludeData || false;
 

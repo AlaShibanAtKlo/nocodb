@@ -125,7 +125,7 @@ export default class Model implements TableType {
     model: Partial<TableReqType> & {
       mm?: BoolType;
       type?: ModelTypes;
-      sourceId?: string;
+      source_id?: string;
     },
     ncMeta = Noco.ncMeta,
   ) {
@@ -157,7 +157,7 @@ export default class Model implements TableType {
 
     const base = await Base.get(baseId, ncMeta);
 
-    insertObj.sourceId = sourceId;
+    insertObj.source_id = sourceId;
 
     const { id } = await ncMeta.metaInsert2(
       base.fk_workspace_id,

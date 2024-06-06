@@ -8,7 +8,7 @@ import isEmail from 'validator/lib/isEmail';
 import NocoCache from '~/cache/NocoCache';
 import Noco from '~/Noco';
 import { BaseUser, User } from '~/models';
-import { CacheScope, MetaTable } from '~/utils/globals';
+import { CacheScope, MetaTable, RootScopes } from '~/utils/globals';
 import { randomTokenString } from '~/services/users/helpers';
 
 const rolesLevel = { owner: 0, creator: 1, editor: 2, commenter: 3, viewer: 4 };
@@ -163,8 +163,8 @@ export default async function initAdminFromEnv(_ncMeta = Noco.ncMeta) {
 
               // delete existing user
               await ncMeta.metaDelete(
-                null,
-                null,
+                RootScopes.ROOT,
+                RootScopes.ROOT,
                 MetaTable.USERS,
                 existingUserWithNewEmail.id,
               );

@@ -40,9 +40,14 @@ export default class Store {
       if (storeData) return storeData;
     }
 
-    const storeData = await ncMeta.metaGet(null, null, MetaTable.STORE, {
-      key,
-    });
+    const storeData = await ncMeta.metaGet(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.STORE,
+      {
+        key,
+      },
+    );
 
     if (lookInCache)
       await NocoCache.set(`${CacheScope.STORE}:${key}`, storeData);

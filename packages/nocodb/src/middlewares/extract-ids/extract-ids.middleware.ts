@@ -64,7 +64,6 @@ export class ExtractIdsMiddleware implements NestMiddleware, CanActivate {
       const base = await Base.getByTitleOrId(params.baseName);
       if (base) {
         req.ncBaseId = base.id;
-        res.locals.base = base;
       }
     }
     if (params.baseId) {
@@ -190,6 +189,11 @@ export class ExtractIdsMiddleware implements NestMiddleware, CanActivate {
     ) {
       req.ncBaseId = req.query.base_id;
     }
+
+    req.context = {
+      workspace_id: null,
+      base_id: req.ncBaseId,
+    };
 
     next();
   }

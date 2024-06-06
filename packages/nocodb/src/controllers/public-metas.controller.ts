@@ -2,6 +2,8 @@ import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { PublicMetasService } from '~/services/public-metas.service';
 import { PublicApiLimiterGuard } from '~/guards/public-api-limiter.guard';
+import { TenantContext } from '~/decorators/tenant-context.decorator';
+import { NcContext, NcRequest } from '~/interface/config';
 
 @UseGuards(PublicApiLimiterGuard)
 @Controller()

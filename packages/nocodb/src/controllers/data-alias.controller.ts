@@ -18,6 +18,8 @@ import { parseHrtimeToMilliSeconds } from '~/helpers';
 import { Acl } from '~/middlewares/extract-ids/extract-ids.middleware';
 import { DatasService } from '~/services/datas.service';
 import { DataApiLimiterGuard } from '~/guards/data-api-limiter.guard';
+import { TenantContext } from '~/decorators/tenant-context.decorator';
+import { NcContext, NcRequest } from '~/interface/config';
 
 @Controller()
 @UseGuards(DataApiLimiterGuard, GlobalGuard)

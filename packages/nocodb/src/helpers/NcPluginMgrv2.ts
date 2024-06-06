@@ -67,14 +67,14 @@ class NcPluginMgrv2 {
   public static async init(ncMeta = Noco.ncMeta): Promise<void> {
     /* Populate rows into nc_plugins table if not present */
     for (const plugin of defaultPlugins) {
-      const pluginConfig = await ncMeta.metaGet(null, null, MetaTable.PLUGIN, {
+      const pluginConfig = await ncMeta.metaGet(context.workspace_id, context.base_id, MetaTable.PLUGIN, {
         title: plugin.title,
       });
 
       if (!pluginConfig) {
         await ncMeta.metaInsert2(
-          RootScopes.ROOT,
-          RootScopes.ROOT,
+          context.workspace_id,
+          context.base_id,
           MetaTable.PLUGIN,
           {
             title: plugin.title,
@@ -88,8 +88,8 @@ class NcPluginMgrv2 {
         );
       } else if (pluginConfig.version !== plugin.version) {
         await ncMeta.metaUpdate(
-          RootScopes.ROOT,
-          RootScopes.ROOT,
+          context.workspace_id,
+          context.base_id,
           MetaTable.PLUGIN,
           {
             title: plugin.title,
@@ -157,7 +157,7 @@ class NcPluginMgrv2 {
   public static async storageAdapter(
     ncMeta = Noco.ncMeta,
   ): Promise<IStorageAdapterV2> {
-    const pluginData = await ncMeta.metaGet2(null, null, MetaTable.PLUGIN, {
+    const pluginData = await ncMeta.metaGet2(context.workspace_id, context.base_id, MetaTable.PLUGIN, {
       category: PluginCategory.STORAGE,
       active: true,
     });
@@ -182,7 +182,7 @@ class NcPluginMgrv2 {
     isUserInvite = true,
     ncMeta = Noco.ncMeta,
   ): Promise<IEmailAdapter> {
-    const pluginData = await ncMeta.metaGet2(null, null, MetaTable.PLUGIN, {
+    const pluginData = await ncMeta.metaGet2(context.workspace_id, context.base_id, MetaTable.PLUGIN, {
       category: PluginCategory.EMAIL,
       active: true,
     });
@@ -212,7 +212,7 @@ class NcPluginMgrv2 {
     title: string,
     ncMeta = Noco.ncMeta,
   ): Promise<IWebhookNotificationAdapter> {
-    const pluginData = await ncMeta.metaGet2(null, null, MetaTable.PLUGIN, {
+    const pluginData = await ncMeta.metaGet2(context.workspace_id, context.base_id, MetaTable.PLUGIN, {
       title,
       active: true,
     });

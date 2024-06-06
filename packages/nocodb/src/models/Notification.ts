@@ -59,8 +59,8 @@ export default class Notification {
     ]);
 
     const notifications = await ncMeta.metaList2(
-      null,
-      null,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.NOTIFICATION,
       {
         condition,
@@ -92,9 +92,14 @@ export default class Notification {
       'is_deleted',
       'fk_user_id',
     ]);
-    const count = await ncMeta.metaCount(null, null, MetaTable.NOTIFICATION, {
-      condition,
-    });
+    const count = await ncMeta.metaCount(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.NOTIFICATION,
+      {
+        condition,
+      },
+    );
 
     return count;
   }

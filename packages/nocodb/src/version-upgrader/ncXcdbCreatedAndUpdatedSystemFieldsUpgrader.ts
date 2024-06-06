@@ -362,7 +362,7 @@ async function upgradeModels({
 // database to virtual relation and create an index for it
 export default async function ({ ncMeta }: NcUpgraderCtx) {
   // get all xcdb sources
-  const sources = await ncMeta.metaList2(null, null, MetaTable.BASES, {
+  const sources = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.BASES, {
     xcCondition: {
       _or: [
         {

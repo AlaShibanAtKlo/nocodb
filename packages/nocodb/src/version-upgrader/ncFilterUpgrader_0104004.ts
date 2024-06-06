@@ -231,7 +231,7 @@ const migrateToCheckboxFilter = (filter, ncMeta) => {
 };
 
 async function migrateFilters(ncMeta: MetaService) {
-  const filters = await ncMeta.metaList2(null, null, MetaTable.FILTER_EXP);
+  const filters = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.FILTER_EXP);
   for (const filter of filters) {
     if (!filter.fk_column_id || filter.is_group) {
       continue;
@@ -301,7 +301,7 @@ async function migrateFilters(ncMeta: MetaService) {
 async function updateProjectMeta(ncMeta: MetaService) {
   const baseHasEmptyOrFilters: Record<string, boolean> = {};
 
-  const filters = await ncMeta.metaList2(null, null, MetaTable.FILTER_EXP);
+  const filters = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.FILTER_EXP);
 
   const actions = [];
 
@@ -313,7 +313,7 @@ async function updateProjectMeta(ncMeta: MetaService) {
     }
   }
 
-  const bases = await ncMeta.metaList2(null, null, MetaTable.PROJECT);
+  const bases = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.PROJECT);
 
   const defaultProjectMeta = {
     showNullAndEmptyInFilter: false,

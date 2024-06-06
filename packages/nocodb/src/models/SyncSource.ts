@@ -1,9 +1,9 @@
+import type { NcContext } from '~/interface/config';
 import User from '~/models/User';
 import { NcError } from '~/helpers/catchError';
 import Noco from '~/Noco';
 import { extractProps } from '~/helpers/extractProps';
 import { MetaTable } from '~/utils/globals';
-import { Source } from '~/models';
 
 export default class SyncSource {
   id?: string;
@@ -21,14 +21,18 @@ export default class SyncSource {
     Object.assign(this, syncSource);
   }
 
-  public getUser(ncMeta = Noco.ncMeta) {
-    return User.get(this.fk_user_id, ncMeta);
+  public getUser(context: NcContext, ncMeta = Noco.ncMeta) {
+    return User.get(context, this.fk_user_id, ncMeta);
   }
 
-  public static async get(syncSourceId: string, ncMeta = Noco.ncMeta) {
+  public static async get(
+    context: NcContext,
+    syncSourceId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     const syncSource = await ncMeta.metaGet2(
-      null,
-      null,
+      context.workspace_id,
+      context.base_id,
       MetaTable.SYNC_SOURCE,
       syncSourceId,
     );
@@ -40,13 +44,18 @@ export default class SyncSource {
     return syncSource && new SyncSource(syncSource);
   }
 
-  static async list(baseId: string, sourceId?: string, ncMeta = Noco.ncMeta) {
+  static async list(
+    context: NcContext,
+    baseId: string,
+    sourceId?: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     const condition = sourceId
       ? { base_id: baseId, source_id: sourceId }
       : { base_id: baseId };
     const syncSources = await ncMeta.metaList2(
-      null,
-      null,
+      context.workspace_id,
+      context.base_id,
       MetaTable.SYNC_SOURCE,
       {
         condition,
@@ -67,6 +76,7 @@ export default class SyncSource {
   }
 
   public static async insert(
+    context: NcContext,
     syncSource: Partial<SyncSource>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -84,25 +94,22 @@ export default class SyncSource {
       insertObj.details = JSON.stringify(insertObj.details);
     }
 
-    const source = await Source.get(insertObj.source_id, false, ncMeta);
-
     const { id } = await ncMeta.metaInsert2(
-      source.fk_workspace_id,
-      source.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.SYNC_SOURCE,
       insertObj,
     );
 
-    return this.get(id, ncMeta);
+    return this.get(context, id, ncMeta);
   }
 
   public static async update(
+    context: NcContext,
     syncSourceId: string,
     syncSource: Partial<SyncSource>,
     ncMeta = Noco.ncMeta,
   ) {
-    const syncSourceObj = await this.get(syncSourceId, ncMeta);
-
     const updateObj = extractProps(syncSource, [
       'id',
       'title',
@@ -120,28 +127,36 @@ export default class SyncSource {
 
     // set meta
     await ncMeta.metaUpdate(
-      syncSourceObj.fk_workspace_id,
-      syncSourceObj.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.SYNC_SOURCE,
       updateObj,
       syncSourceId,
     );
 
-    return this.get(syncSourceId, ncMeta);
+    return this.get(context, syncSourceId, ncMeta);
   }
 
-  static async delete(syncSourceId: any, ncMeta = Noco.ncMeta) {
-    const syncSource = await this.get(syncSourceId, ncMeta);
-
+  static async delete(
+    context: NcContext,
+    syncSourceId: any,
+    ncMeta = Noco.ncMeta,
+  ) {
     return await ncMeta.metaDelete(
-      syncSource.fk_workspace_id,
-      syncSource.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.SYNC_SOURCE,
       syncSourceId,
     );
   }
 
-  static async deleteByUserId(userId: string, ncMeta = Noco.ncMeta) {
+  static async deleteByUserId(
+    context: NcContext,
+    userId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
+    throw new Error('Method not implemented.');
+
     if (!userId) NcError.badRequest('User Id is required');
 
     return await ncMeta.metaDeleteAll(MetaTable.SYNC_SOURCE, {

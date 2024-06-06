@@ -1,3 +1,4 @@
+import type { NcContext } from '~/interface/config';
 import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
 import { extractProps } from '~/helpers/extractProps';
@@ -18,6 +19,7 @@ export default class BarcodeColumn {
   }
 
   public static async insert(
+    context: NcContext,
     barcodeColumn: Partial<BarcodeColumn>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -39,16 +41,20 @@ export default class BarcodeColumn {
     }
 
     await ncMeta.metaInsert2(
-      column.fk_workspace_id,
-      column.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.COL_BARCODE,
       insertObj,
     );
 
-    return this.read(barcodeColumn.fk_column_id, ncMeta);
+    return this.read(context, barcodeColumn.fk_column_id, ncMeta);
   }
 
-  public static async read(columnId: string, ncMeta = Noco.ncMeta) {
+  public static async read(
+    context: NcContext,
+    columnId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     let column =
       columnId &&
       (await NocoCache.get(
@@ -57,8 +63,8 @@ export default class BarcodeColumn {
       ));
     if (!column) {
       column = await ncMeta.metaGet2(
-        null, //,
-        null, //model.db_alias,
+        context.workspace_id,
+        context.base_id,
         MetaTable.COL_BARCODE,
         { fk_column_id: columnId },
       );
@@ -68,9 +74,13 @@ export default class BarcodeColumn {
     return column ? new BarcodeColumn(column) : null;
   }
 
-  async getValueColumn() {
-    return Column.get({
-      colId: this.fk_barcode_value_column_id,
-    });
+  async getValueColumn(context: NcContext, ncMeta = Noco.ncMeta) {
+    return Column.get(
+      context,
+      {
+        colId: this.fk_barcode_value_column_id,
+      },
+      ncMeta,
+    );
   }
 }

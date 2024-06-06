@@ -13,7 +13,7 @@ export const populatePluginsForCloud = async ({ ncMeta = Noco.ncMeta }) => {
     throw new Error('S3 env variables not found');
   }
 
-  const s3PluginData = await ncMeta.metaGet2(null, null, MetaTable.PLUGIN, {
+  const s3PluginData = await ncMeta.metaGet2(context.workspace_id, context.base_id, MetaTable.PLUGIN, {
     title: S3PluginConfig.title,
   });
 
@@ -36,8 +36,8 @@ export const populatePluginsForCloud = async ({ ncMeta = Noco.ncMeta }) => {
 
   if (isS3PluginUpdateNeeded) {
     await ncMeta.metaUpdate(
-      RootScopes.ROOT,
-      RootScopes.ROOT,
+      context.workspace_id,
+      context.base_id,
       MetaTable.PLUGIN,
       {
         input: JSON.stringify(s3PluginFromEnv),
@@ -57,7 +57,7 @@ export const populatePluginsForCloud = async ({ ncMeta = Noco.ncMeta }) => {
     throw new Error('SES env variables not found');
   }
 
-  const sesPluginData = await ncMeta.metaGet2(null, null, MetaTable.PLUGIN, {
+  const sesPluginData = await ncMeta.metaGet2(context.workspace_id, context.base_id, MetaTable.PLUGIN, {
     title: SESPluginConfig.title,
   });
 
@@ -80,8 +80,8 @@ export const populatePluginsForCloud = async ({ ncMeta = Noco.ncMeta }) => {
 
   if (isSESPluginUpdateNeeded) {
     await ncMeta.metaUpdate(
-      RootScopes.ROOT,
-      RootScopes.ROOT,
+      context.workspace_id,
+      context.base_id,
       MetaTable.PLUGIN,
       {
         input: JSON.stringify(sesPluginFromEnv),

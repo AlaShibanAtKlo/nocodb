@@ -1,4 +1,5 @@
 import type { ModelRoleVisibilityType } from 'nocodb-sdk';
+import type { NcContext } from '~/interface/config';
 import View from '~/models/View';
 import Noco from '~/Noco';
 import {
@@ -24,7 +25,10 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
     Object.assign(this, body);
   }
 
-  static async list(baseId): Promise<ModelRoleVisibility[]> {
+  static async list(
+    context: NcContext,
+    baseId,
+  ): Promise<ModelRoleVisibility[]> {
     const cachedList = await NocoCache.getList(
       CacheScope.MODEL_ROLE_VISIBILITY,
       [baseId],
@@ -33,8 +37,8 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
     const { isNoneList } = cachedList;
     if (!isNoneList && !data.length) {
       data = await Noco.ncMeta.metaList2(
-        baseId,
-        null,
+        context.workspace_id,
+        context.base_id,
         MetaTable.MODEL_ROLE_VISIBILITY,
       );
       await NocoCache.setList(
@@ -48,6 +52,7 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
   }
 
   static async get(
+    context: NcContext,
     args: { role: string; fk_view_id: any },
     ncMeta = Noco.ncMeta,
   ) {
@@ -60,8 +65,8 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
       ));
     if (!data) {
       data = await ncMeta.metaGet2(
-        null,
-        null,
+        context.workspace_id,
+        context.base_id,
         MetaTable.MODEL_ROLE_VISIBILITY,
         // args.fk_model_id
         //   ? {
@@ -83,17 +88,16 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
   }
 
   static async update(
+    context: NcContext,
     fk_view_id: string,
     role: string,
     body: { disabled: any },
     ncMeta = Noco.ncMeta,
   ) {
-    const view = await View.get(fk_view_id, ncMeta);
-
     // set meta
     const res = await ncMeta.metaUpdate(
-      view.fk_workspace_id,
-      view.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.MODEL_ROLE_VISIBILITY,
       {
         disabled: body.disabled,
@@ -114,15 +118,23 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
     return res;
   }
 
-  async delete() {
-    return await ModelRoleVisibility.delete(this.fk_view_id, this.role);
+  async delete(context: NcContext, ncMeta = Noco.ncMeta) {
+    return await ModelRoleVisibility.delete(
+      context,
+      this.fk_view_id,
+      this.role,
+      ncMeta,
+    );
   }
-  static async delete(fk_view_id: string, role: string, ncMeta = Noco.ncMeta) {
-    const view = await View.get(fk_view_id, ncMeta);
-
+  static async delete(
+    context: NcContext,
+    fk_view_id: string,
+    role: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     const res = await ncMeta.metaDelete(
-      view.fk_workspace_id,
-      view.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.MODEL_ROLE_VISIBILITY,
       {
         fk_view_id,
@@ -137,6 +149,7 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
   }
 
   static async insert(
+    context: NcContext,
     body: Partial<ModelRoleVisibilityType>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -148,15 +161,15 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
       'source_id',
     ]);
 
-    const view = await View.get(body.fk_view_id, ncMeta);
+    const view = await View.get(context, body.fk_view_id, ncMeta);
 
     if (!insertObj.source_id) {
       insertObj.source_id = view.source_id;
     }
 
     const result = await ncMeta.metaInsert2(
-      view.fk_workspace_id,
-      view.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.MODEL_ROLE_VISIBILITY,
       insertObj,
     );
@@ -164,6 +177,7 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
     insertObj.id = result.id;
 
     return this.get(
+      context,
       {
         fk_view_id: body.fk_view_id,
         role: body.role,

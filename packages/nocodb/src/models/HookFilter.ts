@@ -1,5 +1,6 @@
 import { UITypes } from 'nocodb-sdk';
 import type { FilterType } from 'nocodb-sdk';
+import type { NcContext } from '~/interface/config';
 import Model from '~/models/Model';
 import Column from '~/models/Column';
 import View from '~/models/View';
@@ -36,10 +37,17 @@ export default class Filter {
     Object.assign(this, data);
   }
 
-  public async getModel(ncMeta = Noco.ncMeta): Promise<Model> {
+  public async getModel(
+    context: NcContext,
+    ncMeta = Noco.ncMeta,
+  ): Promise<Model> {
     return this.fk_view_id
-      ? (await View.get(this.fk_view_id, ncMeta)).getModel(ncMeta)
+      ? (await View.get(context, this.fk_view_id, ncMeta)).getModel(
+          context,
+          ncMeta,
+        )
       : Model.getByIdOrName(
+          context,
           {
             id: this.fk_model_id,
           },
@@ -48,6 +56,7 @@ export default class Filter {
   }
 
   public static async insert(
+    context: NcContext,
     filter: Partial<FilterType>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -64,29 +73,34 @@ export default class Filter {
       'source_id',
     ]);
 
-    const model = await Column.get({ colId: filter.fk_column_id }, ncMeta);
+    const model = await Column.get(
+      context,
+      { colId: filter.fk_column_id },
+      ncMeta,
+    );
 
     if (!filter.source_id) {
       insertObj.source_id = model.source_id;
     }
 
     const row = await ncMeta.metaInsert2(
-      model.fk_workspace_id,
-      model.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.FILTER_EXP,
       insertObj,
     );
     if (filter?.children?.length) {
       await Promise.all(
         filter.children.map((f) =>
-          this.insert({ ...f, fk_parent_id: row.id }, ncMeta),
+          this.insert(context, { ...f, fk_parent_id: row.id }, ncMeta),
         ),
       );
     }
-    return await this.redisPostInsert(row.id, filter, ncMeta);
+    return await this.redisPostInsert(context, row.id, filter, ncMeta);
   }
 
   static async redisPostInsert(
+    context: NcContext,
     id,
     filter: Partial<FilterType>,
     ncMeta = Noco.ncMeta,
@@ -100,7 +114,12 @@ export default class Filter {
     let value = await NocoCache.get(key, CacheGetType.TYPE_OBJECT);
     if (!value) {
       /* get from db */
-      value = await ncMeta.metaGet2(null, null, MetaTable.FILTER_EXP, id);
+      value = await ncMeta.metaGet2(
+        context.workspace_id,
+        context.base_id,
+        MetaTable.FILTER_EXP,
+        id,
+      );
 
       /* store in redis */
       await NocoCache.set(key, value).then(async () => {
@@ -144,9 +163,12 @@ export default class Filter {
     return new Filter(value);
   }
 
-  static async update(id, filter: Partial<Filter>, ncMeta = Noco.ncMeta) {
-    const hookFilter = await this.get(id);
-
+  static async update(
+    context: NcContext,
+    id,
+    filter: Partial<Filter>,
+    ncMeta = Noco.ncMeta,
+  ) {
     const updateObj = extractProps(filter, [
       'fk_column_id',
       'comparison_op',
@@ -158,8 +180,8 @@ export default class Filter {
 
     // set meta
     await ncMeta.metaUpdate(
-      hookFilter.fk_workspace_id,
-      hookFilter.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.FILTER_EXP,
       updateObj,
       id,
@@ -169,16 +191,16 @@ export default class Filter {
     await NocoCache.update(`${CacheScope.FILTER_EXP}:${id}`, updateObj);
   }
 
-  static async delete(id: string, ncMeta = Noco.ncMeta) {
-    const filter = await this.get(id);
+  static async delete(context: NcContext, id: string, ncMeta = Noco.ncMeta) {
+    const filter = await this.get(context, id, ncMeta);
 
     const deleteRecursively = async (filter: Filter) => {
       if (!filter) return;
-      for (const f of (await filter?.getChildren()) || [])
+      for (const f of (await filter?.getChildren(context, ncMeta)) || [])
         await deleteRecursively(f);
       await ncMeta.metaDelete(
-        filter.fk_workspace_id,
-        filter.base_id,
+        context.workspace_id,
+        context.base_id,
         MetaTable.FILTER_EXP,
         filter.id,
       );
@@ -190,11 +212,15 @@ export default class Filter {
     await deleteRecursively(filter);
   }
 
-  public getColumn(): Promise<Column> {
+  public getColumn(context: NcContext, ncMeta = Noco.ncMeta): Promise<Column> {
     if (!this.fk_column_id) return null;
-    return Column.get({
-      colId: this.fk_column_id,
-    });
+    return Column.get(
+      context,
+      {
+        colId: this.fk_column_id,
+      },
+      ncMeta,
+    );
   }
 
   // public async getGroup(ncMeta = Noco.ncMeta): Promise<Filter> {
@@ -204,7 +230,7 @@ export default class Filter {
   //     2
   //   );
   //   if (!filterObj) {
-  //     filterObj = await ncMeta.metaGet2(null, null, MetaTable.FILTER_EXP, {
+  //     filterObj = await ncMeta.metaGet2(context.workspace_id, context.base_id, MetaTable.FILTER_EXP, {
   //       id: this.fk_parent_id
   //     });
   //     await NocoCache.set(
@@ -215,7 +241,10 @@ export default class Filter {
   //   return filterObj && new Filter(filterObj);
   // }
   //
-  public async getChildren(ncMeta = Noco.ncMeta): Promise<Filter[]> {
+  public async getChildren(
+    context: NcContext,
+    ncMeta = Noco.ncMeta,
+  ): Promise<Filter[]> {
     if (this.children) return this.children;
     if (!this.is_group) return null;
     const cachedList = await NocoCache.getList(CacheScope.FILTER_EXP, [
@@ -224,11 +253,16 @@ export default class Filter {
     let { list: childFilters } = cachedList;
     const { isNoneList } = cachedList;
     if (!isNoneList && !childFilters.length) {
-      childFilters = await ncMeta.metaList2(null, null, MetaTable.FILTER_EXP, {
-        condition: {
-          fk_parent_id: this.id,
+      childFilters = await ncMeta.metaList2(
+        context.workspace_id,
+        context.base_id,
+        MetaTable.FILTER_EXP,
+        {
+          condition: {
+            fk_parent_id: this.id,
+          },
         },
-      });
+      );
       await NocoCache.setList(CacheScope.FILTER_EXP, [this.id], childFilters);
     }
     return childFilters && childFilters.map((f) => new Filter(f));
@@ -242,8 +276,8 @@ export default class Filter {
   //   if (!viewId) return null;
   //
   //   const filterObj = await ncMeta.metaGet2(
-  //     null,
-  //     null,
+  // context.workspace_id,
+  // context.base_id,
   //     MetaTable.FILTER_EXP,
   //     { fk_view_id: viewId, fk_parent_id: null }
   //   );
@@ -251,6 +285,7 @@ export default class Filter {
   // }
 
   public static async getFilterObject(
+    context: NcContext,
     {
       viewId,
     }: {
@@ -262,9 +297,14 @@ export default class Filter {
     let { list: filters } = cachedList;
     const { isNoneList } = cachedList;
     if (!isNoneList && !filters.length) {
-      filters = await ncMeta.metaList2(null, null, MetaTable.FILTER_EXP, {
-        condition: { fk_view_id: viewId },
-      });
+      filters = await ncMeta.metaList2(
+        context.workspace_id,
+        context.base_id,
+        MetaTable.FILTER_EXP,
+        {
+          condition: { fk_view_id: viewId },
+        },
+      );
 
       await NocoCache.setList(CacheScope.FILTER_EXP, [viewId], filters);
     }
@@ -286,7 +326,7 @@ export default class Filter {
         grouped[filter._fk_parent_id] = grouped[filter._fk_parent_id] || [];
         grouped[filter._fk_parent_id].push(filter);
         idFilterMapping[filter.id] = filter;
-        filter.column = await new Filter(filter).getColumn();
+        filter.column = await new Filter(filter).getColumn(context, ncMeta);
         if (filter.column?.uidt === UITypes.LinkToAnotherRecord) {
         }
       }
@@ -313,7 +353,7 @@ export default class Filter {
   //     if (!filter) return;
   //     for (const f of filter?.children || []) await deleteRecursively(f);
   //     if (filter.id) {
-  //       await ncMeta.metaDelete(null, null, MetaTable.FILTER_EXP, filter.id);
+  //       await ncMeta.metaDelete(context.workspace_id, context.base_id, filter.id);
   //       await NocoCache.deepDel(
   //         `${CacheScope.FILTER_EXP}:${filter.id}`,
   //         CacheDelDirection.CHILD_TO_PARENT
@@ -323,7 +363,11 @@ export default class Filter {
   //   await deleteRecursively(filter);
   // }
   //
-  private static async get(id: string, ncMeta = Noco.ncMeta) {
+  private static async get(
+    context: NcContext,
+    id: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     let filterObj =
       id &&
       (await NocoCache.get(
@@ -331,15 +375,21 @@ export default class Filter {
         CacheGetType.TYPE_OBJECT,
       ));
     if (!filterObj) {
-      filterObj = await ncMeta.metaGet2(null, null, MetaTable.FILTER_EXP, {
-        id,
-      });
+      filterObj = await ncMeta.metaGet2(
+        context.workspace_id,
+        context.base_id,
+        MetaTable.FILTER_EXP,
+        {
+          id,
+        },
+      );
       await NocoCache.set(`${CacheScope.FILTER_EXP}:${id}`, filterObj);
     }
     return filterObj && new Filter(filterObj);
   }
   //
   static async rootFilterList(
+    context: NcContext,
     { viewId }: { viewId: any },
     ncMeta = Noco.ncMeta,
   ) {
@@ -347,9 +397,14 @@ export default class Filter {
     let { list: filterObjs } = cachedList;
     const { isNoneList } = cachedList;
     if (!isNoneList && !filterObjs.length) {
-      filterObjs = await ncMeta.metaList2(null, null, MetaTable.FILTER_EXP, {
-        condition: { fk_view_id: viewId },
-      });
+      filterObjs = await ncMeta.metaList2(
+        context.workspace_id,
+        context.base_id,
+        MetaTable.FILTER_EXP,
+        {
+          condition: { fk_view_id: viewId },
+        },
+      );
       await NocoCache.setList(CacheScope.FILTER_EXP, [viewId], filterObjs);
     }
     return filterObjs?.map((f) => new Filter(f));
@@ -370,7 +425,7 @@ export default class Filter {
   //     parentId
   //   ]);
   //   if (!filterObjs.length) {
-  //     filterObjs = await ncMeta.metaList2(null, null, MetaTable.FILTER_EXP, {
+  //     filterObjs = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.FILTER_EXP, {
   //       condition: {
   //         fk_parent_id: parentId,
   //         fk_view_id: viewId

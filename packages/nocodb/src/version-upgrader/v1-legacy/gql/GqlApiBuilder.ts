@@ -31,7 +31,7 @@ export class GqlApiBuilder extends BaseApiBuilder<Noco> implements XcMetaMgr {
   }
 
   protected async ncUpAddNestedResolverArgs(_ctx: any): Promise<any> {
-    const models = await this.xcMeta.metaList2(this.baseId, null, 'nc_models', {
+    const models = await this.xcMeta.metaList2(context.workspace_id, context.base_id, 'nc_models', {
       fields: ['meta'],
       condition: {
         type: 'table',
@@ -65,8 +65,8 @@ export class GqlApiBuilder extends BaseApiBuilder<Noco> implements XcMetaMgr {
 
       /* update schema in metadb */
       await this.xcMeta.metaUpdate(
-        this.baseId,
-        this.dbAlias,
+        context.workspace_id,
+        context.base_id,
         'nc_models',
         {
           schema,
@@ -108,8 +108,8 @@ export class GqlApiBuilder extends BaseApiBuilder<Noco> implements XcMetaMgr {
 
       /* update schema in metadb */
       await this.xcMeta.metaUpdate(
-        this.baseId,
-        this.dbAlias,
+        context.workspace_id,
+        context.base_id,
         'nc_models',
         {
           schema,
@@ -125,8 +125,8 @@ export class GqlApiBuilder extends BaseApiBuilder<Noco> implements XcMetaMgr {
       if (meta.manyToMany) {
         for (const mm of meta.manyToMany) {
           await this.xcMeta.metaInsert2(
-            this.baseId,
-            null,
+            context.workspace_id,
+            context.base_id,
             'nc_loaders',
             {
               title: `${mm.tn}Mm${mm.rtn}List`,

@@ -79,7 +79,7 @@ function migrateEmptyAndNullFilters(filter: Filter, ncMeta: MetaService) {
 }
 
 export default async function ({ ncMeta }: NcUpgraderCtx) {
-  const filters = await ncMeta.metaList2(null, null, MetaTable.FILTER_EXP);
+  const filters = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.FILTER_EXP);
   for (const filter of filters) {
     if (!filter.fk_column_id || filter.is_group) {
       continue;

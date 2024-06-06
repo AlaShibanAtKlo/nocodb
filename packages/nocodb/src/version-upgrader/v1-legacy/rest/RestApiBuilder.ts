@@ -74,8 +74,8 @@ export class RestApiBuilder extends BaseApiBuilder<Noco> {
             ))
           ) {
             await this.xcMeta.metaInsert2(
-              this.baseId,
-              null,
+              context.workspace_id,
+              context.base_id,
               'nc_routes',
               {
                 acl: JSON.stringify(route.acl),
@@ -91,8 +91,8 @@ export class RestApiBuilder extends BaseApiBuilder<Noco> {
             );
           } else {
             await this.xcMeta.metaUpdate(
-              this.baseId,
-              this.dbAlias,
+              context.workspace_id,
+              context.base_id,
               'nc_routes',
               {
                 order: i,
@@ -157,8 +157,8 @@ export class RestApiBuilder extends BaseApiBuilder<Noco> {
 
       oldSwaggerDoc.definitions = swaggerDoc.definitions;
       await this.xcMeta.metaUpdate(
-        this.baseId,
-        this.dbAlias,
+        context.workspace_id,
+        context.base_id,
         'nc_models',
         {
           schema: JSON.stringify(oldSwaggerDoc),

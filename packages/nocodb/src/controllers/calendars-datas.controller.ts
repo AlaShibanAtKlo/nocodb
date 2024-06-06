@@ -14,6 +14,8 @@ import { CalendarDatasService } from '~/services/calendar-datas.service';
 import { parseHrtimeToMilliSeconds } from '~/helpers';
 
 import { Acl } from '~/middlewares/extract-ids/extract-ids.middleware';
+import { TenantContext } from '~/decorators/tenant-context.decorator';
+import { NcContext, NcRequest } from '~/interface/config';
 
 @Controller()
 @UseGuards(DataApiLimiterGuard, GlobalGuard)

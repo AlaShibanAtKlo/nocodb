@@ -3,8 +3,8 @@ import type { NcBuilderUpgraderCtx } from '../BaseApiBuilder';
 export default async function (ctx: NcBuilderUpgraderCtx) {
   try {
     const relations = await ctx.xcMeta.metaList2(
-      ctx.baseId,
-      null,
+      context.workspace_id,
+      context.base_id,
       'nc_relations',
     );
 
@@ -59,8 +59,8 @@ export default async function (ctx: NcBuilderUpgraderCtx) {
         }
 
         await ctx.xcMeta.metaUpdate(
-          ctx.baseId,
-          ctx.dbAlias,
+          context.workspace_id,
+          context.base_id,
           'nc_models',
           { meta: JSON.stringify(meta) },
           {
@@ -95,8 +95,8 @@ export default async function (ctx: NcBuilderUpgraderCtx) {
           meta.hasMany.splice(meta.hasMany.indexOf(duplicateHms[1]), 1);
         }
         await ctx.xcMeta.metaUpdate(
-          ctx.baseId,
-          ctx.dbAlias,
+          context.workspace_id,
+          context.base_id,
           'nc_models',
           { meta: JSON.stringify(meta) },
           {

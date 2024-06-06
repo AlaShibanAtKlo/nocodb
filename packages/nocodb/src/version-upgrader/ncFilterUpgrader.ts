@@ -9,7 +9,7 @@ import Column from '~/models/Column';
 // this upgrader is to retrieve the correct base id from either view, hook, or column
 // and update the base id
 export default async function ({ ncMeta }: NcUpgraderCtx) {
-  const filters = await ncMeta.metaList2(null, null, MetaTable.FILTER_EXP);
+  const filters = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.FILTER_EXP);
   for (const filter of filters) {
     let model: { base_id?: string; source_id?: string };
     if (filter.fk_view_id) {
@@ -29,8 +29,8 @@ export default async function ({ ncMeta }: NcUpgraderCtx) {
 
     if (filter.base_id !== model.base_id) {
       await ncMeta.metaUpdate(
-        filter.fk_workspace_id,
-        filter.base_id,
+        context.workspace_id,
+        context.base_id,
         MetaTable.FILTER_EXP,
         { source_id: model.source_id, base_id: model.base_id },
         filter.id,

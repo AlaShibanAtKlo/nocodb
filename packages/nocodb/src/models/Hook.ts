@@ -1,4 +1,5 @@
 import type { BoolType, HookReqType, HookType } from 'nocodb-sdk';
+import type { NcContext } from '~/interface/config';
 import Model from '~/models/Model';
 import Filter from '~/models/Filter';
 import HookFilter from '~/models/HookFilter';
@@ -42,7 +43,11 @@ export default class Hook implements HookType {
     Object.assign(this, hook);
   }
 
-  public static async get(hookId: string, ncMeta = Noco.ncMeta) {
+  public static async get(
+    context: NcContext,
+    hookId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     let hook =
       hookId &&
       (await NocoCache.get(
@@ -50,17 +55,27 @@ export default class Hook implements HookType {
         CacheGetType.TYPE_OBJECT,
       ));
     if (!hook) {
-      hook = await ncMeta.metaGet2(null, null, MetaTable.HOOKS, hookId);
+      hook = await ncMeta.metaGet2(
+        context.workspace_id,
+        context.base_id,
+        MetaTable.HOOKS,
+        hookId,
+      );
       await NocoCache.set(`${CacheScope.HOOK}:${hookId}`, hook);
     }
     return hook && new Hook(hook);
   }
 
-  public async getFilters(ncMeta = Noco.ncMeta) {
-    return await Filter.rootFilterListByHook({ hookId: this.id }, ncMeta);
+  public async getFilters(context: NcContext, ncMeta = Noco.ncMeta) {
+    return await Filter.rootFilterListByHook(
+      context,
+      { hookId: this.id },
+      ncMeta,
+    );
   }
 
   static async list(
+    context: NcContext,
     param: {
       fk_model_id: string;
       event?: HookType['event'];
@@ -74,18 +89,23 @@ export default class Hook implements HookType {
     let { list: hooks } = cachedList;
     const { isNoneList } = cachedList;
     if (!isNoneList && !hooks.length) {
-      hooks = await ncMeta.metaList2(null, null, MetaTable.HOOKS, {
-        condition: {
-          fk_model_id: param.fk_model_id,
-          // ...(param.event ? { event: param.event?.toLowerCase?.() } : {}),
-          // ...(param.operation
-          //   ? { operation: param.operation?.toLowerCase?.() }
-          //   : {})
+      hooks = await ncMeta.metaList2(
+        context.workspace_id,
+        context.base_id,
+        MetaTable.HOOKS,
+        {
+          condition: {
+            fk_model_id: param.fk_model_id,
+            // ...(param.event ? { event: param.event?.toLowerCase?.() } : {}),
+            // ...(param.operation
+            //   ? { operation: param.operation?.toLowerCase?.() }
+            //   : {})
+          },
+          orderBy: {
+            created_at: 'asc',
+          },
         },
-        orderBy: {
-          created_at: 'asc',
-        },
-      });
+      );
       await NocoCache.setList(CacheScope.HOOK, [param.fk_model_id], hooks);
     }
     // filter event & operation
@@ -102,7 +122,11 @@ export default class Hook implements HookType {
     return hooks?.map((h) => new Hook(h));
   }
 
-  public static async insert(hook: Partial<Hook>, ncMeta = Noco.ncMeta) {
+  public static async insert(
+    context: NcContext,
+    hook: Partial<Hook>,
+    ncMeta = Noco.ncMeta,
+  ) {
     const insertObj = extractProps(hook, [
       'fk_model_id',
       'title',
@@ -128,7 +152,11 @@ export default class Hook implements HookType {
       insertObj.notification = JSON.stringify(insertObj.notification);
     }
 
-    const model = await Model.getByIdOrName({ id: hook.fk_model_id }, ncMeta);
+    const model = await Model.getByIdOrName(
+      context,
+      { id: hook.fk_model_id },
+      ncMeta,
+    );
 
     if (!insertObj.source_id) {
       insertObj.source_id = model.source_id;
@@ -138,13 +166,13 @@ export default class Hook implements HookType {
     insertObj.version = 'v2';
 
     const { id } = await ncMeta.metaInsert2(
-      model.fk_workspace_id,
-      model.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.HOOKS,
       insertObj,
     );
 
-    return this.get(id, ncMeta).then(async (hook) => {
+    return this.get(context, id, ncMeta).then(async (hook) => {
       await NocoCache.appendToList(
         CacheScope.HOOK,
         [hook.fk_model_id],
@@ -155,12 +183,11 @@ export default class Hook implements HookType {
   }
 
   public static async update(
+    context: NcContext,
     hookId: string,
     hook: Partial<Hook>,
     ncMeta = Noco.ncMeta,
   ) {
-    const existingHook = await this.get(hookId, ncMeta);
-
     const updateObj = extractProps(hook, [
       'title',
       'description',
@@ -196,8 +223,8 @@ export default class Hook implements HookType {
 
     // set meta
     await ncMeta.metaUpdate(
-      existingHook.fk_workspace_id,
-      existingHook.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.HOOKS,
       updateObj,
       hookId,
@@ -205,15 +232,14 @@ export default class Hook implements HookType {
 
     await NocoCache.update(`${CacheScope.HOOK}:${hookId}`, updateObj);
 
-    return this.get(hookId, ncMeta);
+    return this.get(context, hookId, ncMeta);
   }
 
-  static async delete(hookId: any, ncMeta = Noco.ncMeta) {
-    const hook = await this.get(hookId, ncMeta);
+  static async delete(context: NcContext, hookId: any, ncMeta = Noco.ncMeta) {
     // Delete Hook Filters
     const filterList = await ncMeta.metaList2(
-      null,
-      null,
+      context.workspace_id,
+      context.base_id,
       MetaTable.FILTER_EXP,
       {
         condition: { fk_hook_id: hookId },
@@ -232,8 +258,8 @@ export default class Hook implements HookType {
       CacheDelDirection.CHILD_TO_PARENT,
     );
     return await ncMeta.metaDelete(
-      hook.fk_workspace_id,
-      hook.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.HOOKS,
       hookId,
     );

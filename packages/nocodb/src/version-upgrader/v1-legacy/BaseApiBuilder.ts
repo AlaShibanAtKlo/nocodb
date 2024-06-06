@@ -187,8 +187,8 @@ export default abstract class BaseApiBuilder<T extends Noco> {
             // update version in meta after each upgrade
             configObj.version = version.name;
             await this.xcMeta.metaUpdate(
-              this.baseId,
-              this.dbAlias,
+              context.workspace_id,
+              context.base_id,
               'nc_store',
               {
                 value: JSON.stringify(configObj),
@@ -206,8 +206,8 @@ export default abstract class BaseApiBuilder<T extends Noco> {
         }
         configObj.version = process.env.NC_VERSION;
         await this.xcMeta.metaUpdate(
-          this.baseId,
-          this.dbAlias,
+          context.workspace_id,
+          context.base_id,
           'nc_store',
           {
             value: JSON.stringify(configObj),
@@ -222,12 +222,12 @@ export default abstract class BaseApiBuilder<T extends Noco> {
       const configObj: NcConfig = JSON.parse(JSON.stringify(this.config));
       delete configObj.envs;
       const isOld = (
-        await this.xcMeta.metaList2(this.baseId, null, 'nc_models')
+        await this.xcMeta.metaList2(context.workspace_id, context.base_id, 'nc_models')
       )?.length;
       configObj.version = isOld ? '0009000' : process.env.NC_VERSION;
       await this.xcMeta.metaInsert2(
-        RootScopes.ROOT,
-        RootScopes.ROOT,
+        context.workspace_id,
+        context.base_id,
         'nc_store',
         {
           key: 'NC_CONFIG',
@@ -348,7 +348,7 @@ export default abstract class BaseApiBuilder<T extends Noco> {
   }
 
   protected async ncUpManyToMany(_ctx: any): Promise<any> {
-    const models = await this.xcMeta.metaList2(this.baseId, null, 'nc_models', {
+    const models = await this.xcMeta.metaList2(context.workspace_id, context.base_id, 'nc_models', {
       fields: ['meta'],
       condition: {
         type: 'table',
@@ -384,8 +384,8 @@ export default abstract class BaseApiBuilder<T extends Noco> {
       ).mapDefaultDisplayValue(meta.columns);
       // update meta
       await this.xcMeta.metaUpdate(
-        this.baseId,
-        this.dbAlias,
+        context.workspace_id,
+        context.base_id,
         'nc_models',
         {
           meta: JSON.stringify(meta),
@@ -540,8 +540,8 @@ export default abstract class BaseApiBuilder<T extends Noco> {
           }),
       ];
       await this.xcMeta.metaUpdate(
-        this.baseId,
-        this.dbAlias,
+        context.workspace_id,
+        context.base_id,
         'nc_models',
         {
           meta: JSON.stringify(meta),
@@ -558,8 +558,8 @@ export default abstract class BaseApiBuilder<T extends Noco> {
     // Update metadata of associative table
     for (const meta of assocMetas) {
       await this.xcMeta.metaUpdate(
-        this.baseId,
-        this.dbAlias,
+        context.workspace_id,
+        context.base_id,
         'nc_models',
         {
           mm: 1,

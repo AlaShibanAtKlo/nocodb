@@ -91,7 +91,7 @@ export default async function initAdminFromEnv(_ncMeta = Noco.ncMeta) {
         );
         const email_verification_token = uuidv4();
         // TODO improve this
-        const superUsers = await ncMeta.metaList2(null, null, MetaTable.USERS);
+        const superUsers = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.USERS);
 
         let superUserPresent = false;
 
@@ -114,8 +114,8 @@ export default async function initAdminFromEnv(_ncMeta = Noco.ncMeta) {
               // get all base access belongs to the existing account
               // and migrate to the admin account
               const existingUserProjects = await ncMeta.metaList2(
-                null,
-                null,
+                context.workspace_id,
+                context.base_id,
                 MetaTable.PROJECT_USERS,
                 {
                   condition: { fk_user_id: existingUserWithNewEmail.id },
@@ -163,8 +163,8 @@ export default async function initAdminFromEnv(_ncMeta = Noco.ncMeta) {
 
               // delete existing user
               await ncMeta.metaDelete(
-                RootScopes.ROOT,
-                RootScopes.ROOT,
+                context.workspace_id,
+                context.base_id,
                 MetaTable.USERS,
                 existingUserWithNewEmail.id,
               );

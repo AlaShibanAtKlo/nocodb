@@ -66,8 +66,8 @@ export default class NcUpgrader {
               // update version in meta after each upgrade
               config.version = version.name;
               await ctx.ncMeta.metaUpdate(
-                RootScopes.ROOT,
-                RootScopes.ROOT,
+                context.workspace_id,
+                context.base_id,
                 'nc_store',
                 {
                   value: JSON.stringify({ version: config.version }),
@@ -93,8 +93,8 @@ export default class NcUpgrader {
           (await ctx.ncMeta.baseList())?.length;
         configObj.version = isOld ? '0009000' : process.env.NC_VERSION;
         await ctx.ncMeta.metaInsert2(
-          RootScopes.ROOT,
-          RootScopes.ROOT,
+          context.workspace_id,
+          context.base_id,
           'nc_store',
           {
             key: NcUpgrader.STORE_KEY,

@@ -1,6 +1,7 @@
 import { ProjectRoles } from 'nocodb-sdk';
 import type { BaseType } from 'nocodb-sdk';
 import type User from '~/models/User';
+import type { NcContext } from '~/interface/config';
 import Base from '~/models/Base';
 import {
   CacheDelDirection,
@@ -28,6 +29,7 @@ export default class BaseUser {
   }
 
   public static async bulkInsert(
+    context: NcContext,
     baseUsers: Partial<BaseUser>[],
     ncMeta = Noco.ncMeta,
   ) {
@@ -39,11 +41,9 @@ export default class BaseUser {
       return;
     }
 
-    const base = await Base.get(insertObj[0].base_id, ncMeta);
-
     const bulkData = await ncMeta.bulkMetaInsert(
-      base.fk_workspace_id,
-      base.id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.PROJECT_USERS,
       insertObj,
       true,
@@ -75,6 +75,7 @@ export default class BaseUser {
   }
 
   public static async insert(
+    context: NcContext,
     baseUser: Partial<BaseUser>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -84,17 +85,15 @@ export default class BaseUser {
       'roles',
     ]);
 
-    const base = await Base.get(insertObj.base_id, ncMeta);
-
     const { base_id, fk_user_id } = await ncMeta.metaInsert2(
-      base.fk_workspace_id,
-      base.id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.PROJECT_USERS,
       insertObj,
       true,
     );
 
-    const res = await this.get(base_id, fk_user_id, ncMeta);
+    const res = await this.get(context, base_id, fk_user_id, ncMeta);
 
     await NocoCache.appendToList(
       CacheScope.BASE_USER,
@@ -106,9 +105,14 @@ export default class BaseUser {
   }
 
   // public static async update(id, user: Partial<BaseUser>, ncMeta = Noco.ncMeta) {
-  //   // return await ncMeta.metaUpdate(null, null, MetaTable.USERS, id, insertObj);
+  //   // return await ncMeta.metaUpdate(context.workspace_id, context.base_id, insertObj);
   // }
-  static async get(baseId: string, userId: string, ncMeta = Noco.ncMeta) {
+  static async get(
+    context: NcContext,
+    baseId: string,
+    userId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     let baseUser =
       baseId &&
       userId &&
@@ -157,6 +161,7 @@ export default class BaseUser {
   }
 
   public static async getUsersList(
+    context: NcContext,
     {
       base_id,
       mode = 'full',
@@ -235,6 +240,7 @@ export default class BaseUser {
   }
 
   public static async getUsersCount(
+    context: NcContext,
     {
       base_id,
       query,
@@ -266,17 +272,16 @@ export default class BaseUser {
   }
 
   static async updateRoles(
+    context: NcContext,
     baseId,
     userId,
     roles: string,
     ncMeta = Noco.ncMeta,
   ) {
-    const base = await Base.get(baseId, ncMeta);
-
     // set meta
     const res = await ncMeta.metaUpdate(
-      base.fk_workspace_id,
-      base.id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.PROJECT_USERS,
       {
         roles,
@@ -295,19 +300,18 @@ export default class BaseUser {
   }
 
   static async update(
+    context: NcContext,
     baseId,
     userId,
     baseUser: Partial<BaseUser>,
     ncMeta = Noco.ncMeta,
   ) {
-    const base = await Base.get(baseId, ncMeta);
-
     const updateObj = extractProps(baseUser, ['starred', 'hidden', 'order']);
 
     // set meta
     await ncMeta.metaUpdate(
-      base.fk_workspace_id,
-      base.id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.PROJECT_USERS,
       updateObj,
       {
@@ -321,16 +325,19 @@ export default class BaseUser {
       updateObj,
     );
 
-    return await this.get(baseId, userId, ncMeta);
+    return await this.get(context, baseId, userId, ncMeta);
   }
 
-  static async delete(baseId: string, userId: string, ncMeta = Noco.ncMeta) {
-    const base = await Base.get(baseId, ncMeta);
-
+  static async delete(
+    context: NcContext,
+    baseId: string,
+    userId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     // delete meta
     const response = await ncMeta.metaDelete(
-      base.fk_workspace_id,
-      base.id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.PROJECT_USERS,
       {
         fk_user_id: userId,
@@ -348,12 +355,18 @@ export default class BaseUser {
   }
 
   static async getProjectsIdList(
+    context: NcContext,
     userId: string,
     ncMeta = Noco.ncMeta,
   ): Promise<BaseUser[]> {
-    return await ncMeta.metaList2(null, null, MetaTable.PROJECT_USERS, {
-      condition: { fk_user_id: userId },
-    });
+    return await ncMeta.metaList2(
+      context.workspace_id,
+      context.base_id,
+      MetaTable.PROJECT_USERS,
+      {
+        condition: { fk_user_id: userId },
+      },
+    );
   }
 
   static async getProjectsList(
@@ -442,7 +455,15 @@ export default class BaseUser {
         .map((p) => {
           const base = Base.castType(p);
           base.meta = parseMetaProp(base);
-          promises.push(base.getSources(ncMeta));
+          promises.push(
+            base.getSources(
+              {
+                workspace_id: base.fk_workspace_id,
+                base_id: base.id,
+              },
+              ncMeta,
+            ),
+          );
           return base;
         });
 
@@ -455,17 +476,21 @@ export default class BaseUser {
   }
 
   static async updateOrInsert(
+    context: NcContext,
     baseId,
     userId,
     baseUser: Partial<BaseUser>,
     ncMeta = Noco.ncMeta,
   ) {
-    const existingProjectUser = await this.get(baseId, userId, ncMeta);
+    const existingProjectUser = await this.get(context, baseId, userId, ncMeta);
 
     if (existingProjectUser) {
-      return await this.update(baseId, userId, baseUser, ncMeta);
+      return await this.update(context, baseId, userId, baseUser, ncMeta);
     } else {
-      return await this.insert({ base_id: baseId, fk_user_id: userId });
+      return await this.insert(context, {
+        base_id: baseId,
+        fk_user_id: userId,
+      });
     }
   }
 }

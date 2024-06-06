@@ -1,5 +1,6 @@
 import { UITypes } from 'nocodb-sdk';
 import type { BoolType, KanbanType, MetaType } from 'nocodb-sdk';
+import type { NcContext } from '~/interface/config';
 import View from '~/models/View';
 import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
@@ -30,7 +31,11 @@ export default class KanbanView implements KanbanType {
     Object.assign(this, data);
   }
 
-  public static async get(viewId: string, ncMeta = Noco.ncMeta) {
+  public static async get(
+    context: NcContext,
+    viewId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     let view =
       viewId &&
       (await NocoCache.get(
@@ -38,9 +43,14 @@ export default class KanbanView implements KanbanType {
         CacheGetType.TYPE_OBJECT,
       ));
     if (!view) {
-      view = await ncMeta.metaGet2(null, null, MetaTable.KANBAN_VIEW, {
-        fk_view_id: viewId,
-      });
+      view = await ncMeta.metaGet2(
+        context.workspace_id,
+        context.base_id,
+        MetaTable.KANBAN_VIEW,
+        {
+          fk_view_id: viewId,
+        },
+      );
 
       view = prepareForResponse(view);
 
@@ -51,24 +61,34 @@ export default class KanbanView implements KanbanType {
   }
 
   public static async IsColumnBeingUsedAsGroupingField(
+    context: NcContext,
     columnId: string,
     ncMeta = Noco.ncMeta,
   ) {
     return (
       (
-        await ncMeta.metaList2(null, null, MetaTable.KANBAN_VIEW, {
-          condition: {
-            fk_grp_col_id: columnId,
+        await ncMeta.metaList2(
+          context.workspace_id,
+          context.base_id,
+          MetaTable.KANBAN_VIEW,
+          {
+            condition: {
+              fk_grp_col_id: columnId,
+            },
           },
-        })
+        )
       ).length > 0
     );
   }
 
-  static async insert(view: Partial<KanbanView>, ncMeta = Noco.ncMeta) {
-    const columns = await View.get(view.fk_view_id, ncMeta)
-      .then((v) => v?.getModel(ncMeta))
-      .then((m) => m.getColumns(ncMeta));
+  static async insert(
+    context: NcContext,
+    view: Partial<KanbanView>,
+    ncMeta = Noco.ncMeta,
+  ) {
+    const columns = await View.get(context, view.fk_view_id, ncMeta)
+      .then((v) => v?.getModel(context, ncMeta))
+      .then((m) => m.getColumns(context, ncMeta));
 
     const insertObj = extractProps(view, [
       'base_id',
@@ -82,30 +102,29 @@ export default class KanbanView implements KanbanType {
       view?.fk_cover_image_col_id ||
       columns?.find((c) => c.uidt === UITypes.Attachment)?.id;
 
-    const viewRef = await View.get(insertObj.fk_view_id, ncMeta);
+    const viewRef = await View.get(context, insertObj.fk_view_id, ncMeta);
 
     if (!insertObj.source_id) {
       insertObj.source_id = viewRef.source_id;
     }
 
     await ncMeta.metaInsert2(
-      viewRef.fk_workspace_id,
-      viewRef.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.KANBAN_VIEW,
       insertObj,
       true,
     );
 
-    return this.get(view.fk_view_id, ncMeta);
+    return this.get(context, view.fk_view_id, ncMeta);
   }
 
   static async update(
+    context: NcContext,
     kanbanId: string,
     body: Partial<KanbanView>,
     ncMeta = Noco.ncMeta,
   ) {
-    const existingView = await this.get(kanbanId, ncMeta);
-
     const updateObj = extractProps(body, [
       'fk_cover_image_col_id',
       'fk_grp_col_id',
@@ -114,8 +133,8 @@ export default class KanbanView implements KanbanType {
 
     // update meta
     const res = await ncMeta.metaUpdate(
-      existingView.fk_workspace_id,
-      existingView.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.KANBAN_VIEW,
       prepareForDb(updateObj),
       {
@@ -128,10 +147,11 @@ export default class KanbanView implements KanbanType {
       prepareForResponse(updateObj),
     );
 
-    const view = await View.get(kanbanId);
+    const view = await View.get(context, kanbanId);
 
     // on update, delete any optimised single query cache
     await View.clearSingleQueryCache(
+      context,
       view.fk_model_id,
       [{ id: kanbanId }],
       ncMeta,

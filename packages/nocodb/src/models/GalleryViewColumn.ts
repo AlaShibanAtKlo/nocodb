@@ -1,4 +1,5 @@
 import type { BoolType } from 'nocodb-sdk';
+import type { NcContext } from '~/interface/config';
 import View from '~/models/View';
 import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
@@ -21,7 +22,11 @@ export default class GalleryViewColumn {
     Object.assign(this, data);
   }
 
-  public static async get(galleryViewColumnId: string, ncMeta = Noco.ncMeta) {
+  public static async get(
+    context: NcContext,
+    galleryViewColumnId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     let view =
       galleryViewColumnId &&
       (await NocoCache.get(
@@ -30,8 +35,8 @@ export default class GalleryViewColumn {
       ));
     if (!view) {
       view = await ncMeta.metaGet2(
-        null,
-        null,
+        context.workspace_id,
+        context.base_id,
         MetaTable.GALLERY_VIEW_COLUMNS,
         galleryViewColumnId,
       );
@@ -43,6 +48,7 @@ export default class GalleryViewColumn {
     return view && new GalleryViewColumn(view);
   }
   static async insert(
+    context: NcContext,
     column: Partial<GalleryViewColumn>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -61,26 +67,31 @@ export default class GalleryViewColumn {
       },
     );
 
-    const viewRef = await View.get(insertObj.fk_view_id, ncMeta);
+    const viewRef = await View.get(context, insertObj.fk_view_id, ncMeta);
 
     if (!insertObj.source_id) {
       insertObj.source_id = viewRef.source_id;
     }
 
     const { id } = await ncMeta.metaInsert2(
-      viewRef.fk_workspace_id,
-      viewRef.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.GALLERY_VIEW_COLUMNS,
       insertObj,
     );
 
     // on new view column, delete any optimised single query cache
     {
-      const view = await View.get(column.fk_view_id, ncMeta);
-      await View.clearSingleQueryCache(view.fk_model_id, [view], ncMeta);
+      const view = await View.get(context, column.fk_view_id, ncMeta);
+      await View.clearSingleQueryCache(
+        context,
+        view.fk_model_id,
+        [view],
+        ncMeta,
+      );
     }
 
-    return this.get(id, ncMeta).then(async (viewColumn) => {
+    return this.get(context, id, ncMeta).then(async (viewColumn) => {
       await NocoCache.appendToList(
         CacheScope.GALLERY_VIEW_COLUMN,
         [column.fk_view_id],
@@ -91,6 +102,7 @@ export default class GalleryViewColumn {
   }
 
   public static async list(
+    context: NcContext,
     viewId: string,
     ncMeta = Noco.ncMeta,
   ): Promise<GalleryViewColumn[]> {
@@ -101,8 +113,8 @@ export default class GalleryViewColumn {
     const { isNoneList } = cachedList;
     if (!isNoneList && !views.length) {
       views = await ncMeta.metaList2(
-        null,
-        null,
+        context.workspace_id,
+        context.base_id,
         MetaTable.GALLERY_VIEW_COLUMNS,
         {
           condition: {
@@ -124,18 +136,17 @@ export default class GalleryViewColumn {
   }
 
   static async update(
+    context: NcContext,
     columnId: string,
     body: Partial<GalleryViewColumn>,
     ncMeta = Noco.ncMeta,
   ) {
-    const viewColumn = await this.get(columnId, ncMeta);
-
     const updateObj = extractProps(body, ['order', 'show']);
 
     // set meta
     const res = await ncMeta.metaUpdate(
-      viewColumn.fk_workspace_id,
-      viewColumn.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.GALLERY_VIEW_COLUMNS,
       updateObj,
       columnId,
@@ -147,9 +158,9 @@ export default class GalleryViewColumn {
 
     // on view column update, delete any optimised single query cache
     {
-      const viewCol = await this.get(columnId, ncMeta);
-      const view = await View.get(viewCol.fk_view_id, ncMeta);
-      await View.clearSingleQueryCache(view.fk_model_id, [view]);
+      const viewCol = await this.get(context, columnId, ncMeta);
+      const view = await View.get(context, viewCol.fk_view_id, ncMeta);
+      await View.clearSingleQueryCache(context, view.fk_model_id, [view]);
     }
 
     return res;

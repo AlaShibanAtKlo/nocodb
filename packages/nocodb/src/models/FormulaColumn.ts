@@ -1,10 +1,9 @@
+import type { NcContext } from '~/interface/config';
 import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
 import { extractProps } from '~/helpers/extractProps';
 import { CacheGetType, CacheScope, MetaTable } from '~/utils/globals';
 import { parseMetaProp, stringifyMetaProp } from '~/utils/modelUtils';
-import { Column } from '~/models';
-import { NcError } from '~/helpers/catchError';
 
 export default class FormulaColumn {
   formula: string;
@@ -22,6 +21,7 @@ export default class FormulaColumn {
   }
 
   public static async insert(
+    context: NcContext,
     formulaColumn: Partial<FormulaColumn> & { parsed_tree?: any },
     ncMeta = Noco.ncMeta,
   ) {
@@ -35,28 +35,21 @@ export default class FormulaColumn {
 
     insertObj.parsed_tree = stringifyMetaProp(insertObj, 'parsed_tree');
 
-    const column = await Column.get(
-      {
-        colId: insertObj.fk_column_id,
-      },
-      ncMeta,
-    );
-
-    if (!column) {
-      NcError.fieldNotFound(insertObj.fk_column_id);
-    }
-
     await ncMeta.metaInsert2(
-      column.fk_workspace_id,
-      column.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.COL_FORMULA,
       insertObj,
     );
 
-    return this.read(formulaColumn.fk_column_id, ncMeta);
+    return this.read(context, formulaColumn.fk_column_id, ncMeta);
   }
 
-  public static async read(columnId: string, ncMeta = Noco.ncMeta) {
+  public static async read(
+    context: NcContext,
+    columnId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     let column =
       columnId &&
       (await NocoCache.get(
@@ -65,8 +58,8 @@ export default class FormulaColumn {
       ));
     if (!column) {
       column = await ncMeta.metaGet2(
-        null, //,
-        null, //model.db_alias,
+        context.workspace_id,
+        context.base_id,
         MetaTable.COL_FORMULA,
         { fk_column_id: columnId },
       );
@@ -82,12 +75,11 @@ export default class FormulaColumn {
   id: string;
 
   static async update(
+    context: NcContext,
     columnId: string,
     formula: Partial<FormulaColumn> & { parsed_tree?: any },
     ncMeta = Noco.ncMeta,
   ) {
-    const formulaColumn = await this.read(columnId, ncMeta);
-
     const updateObj = extractProps(formula, [
       'formula',
       'formula_raw',
@@ -100,8 +92,8 @@ export default class FormulaColumn {
       updateObj.parsed_tree = stringifyMetaProp(updateObj, 'parsed_tree');
     // set meta
     await ncMeta.metaUpdate(
-      formulaColumn.fk_workspace_id,
-      formulaColumn.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.COL_FORMULA,
       updateObj,
       {

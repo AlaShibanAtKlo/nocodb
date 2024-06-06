@@ -17,6 +17,8 @@ import { PublicDatasExportService } from '~/services/public-datas-export.service
 import NcConnectionMgrv2 from '~/utils/common/NcConnectionMgrv2';
 import { Column, Model, Source, View } from '~/models';
 import { PublicApiLimiterGuard } from '~/guards/public-api-limiter.guard';
+import { TenantContext } from '~/decorators/tenant-context.decorator';
+import { NcContext, NcRequest } from '~/interface/config';
 
 @UseGuards(PublicApiLimiterGuard)
 @Controller()

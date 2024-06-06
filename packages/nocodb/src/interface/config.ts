@@ -324,8 +324,15 @@ export interface AppConfig {
   dashboardPath: string;
 }
 
+export interface NcContext {
+  org_id?: string;
+  workspace_id: string;
+  base_id: string;
+}
+
 export interface NcRequest {
   id?: ReqId;
+  context: NcContext;
   user?: UserType | User;
   ncWorkspaceId?: string;
   ncBaseId?: string;

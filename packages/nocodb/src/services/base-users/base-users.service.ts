@@ -318,8 +318,8 @@ export class BaseUsersService {
     });
 
     const pluginData = await Noco.ncMeta.metaGet2(
-      null,
-      null,
+      context.workspace_id,
+      context.base_id,
       MetaTable.PLUGIN,
       {
         category: PluginCategory.EMAIL,

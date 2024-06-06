@@ -1,4 +1,5 @@
 import { extractRolesObj, type UserType } from 'nocodb-sdk';
+import type { NcContext } from '~/interface/config';
 import { NcError } from '~/helpers/catchError';
 import Noco from '~/Noco';
 import { extractProps } from '~/helpers/extractProps';
@@ -144,16 +145,26 @@ export default class User implements UserType {
         CacheGetType.TYPE_OBJECT,
       ));
     if (!user) {
-      user = await ncMeta.metaGet2(null, null, MetaTable.USERS, {
-        email,
-      });
+      user = await ncMeta.metaGet2(
+        RootScopes.ROOT,
+        RootScopes.ROOT,
+        MetaTable.USERS,
+        {
+          email,
+        },
+      );
       await NocoCache.set(`${CacheScope.USER}:${email}`, user);
     }
     return this.castType(user);
   }
 
   static async isFirst(ncMeta = Noco.ncMeta) {
-    return !(await ncMeta.metaGet2(null, null, MetaTable.USERS, {}));
+    return !(await ncMeta.metaGet2(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.USERS,
+      {},
+    ));
   }
 
   public static async count(
@@ -181,7 +192,12 @@ export default class User implements UserType {
         CacheGetType.TYPE_OBJECT,
       ));
     if (!user) {
-      user = await ncMeta.metaGet2(null, null, MetaTable.USERS, userId);
+      user = await ncMeta.metaGet2(
+        RootScopes.ROOT,
+        RootScopes.ROOT,
+        MetaTable.USERS,
+        userId,
+      );
       await NocoCache.set(`${CacheScope.USER}:${userId}`, user);
     }
     return this.castType(user);
@@ -198,8 +214,8 @@ export default class User implements UserType {
     }
 
     return await ncMeta.metaGet2(
-      null,
-      null,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.USERS,
       userRefreshToken.fk_user_id,
     );
@@ -277,6 +293,7 @@ export default class User implements UserType {
   }
 
   static async getWithRoles(
+    context: NcContext,
     userId: string,
     args: {
       user?: User;
@@ -291,7 +308,7 @@ export default class User implements UserType {
 
     const baseRoles = await new Promise((resolve) => {
       if (args.baseId) {
-        BaseUser.get(args.baseId, user.id).then(async (baseUser) => {
+        BaseUser.get(context, args.baseId, user.id).then(async (baseUser) => {
           const roles = baseUser?.roles;
           // + (user.roles ? `,${user.roles}` : '');
           if (roles) {

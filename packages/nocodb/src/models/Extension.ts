@@ -1,3 +1,4 @@
+import type { NcContext } from '~/interface/config';
 import { prepareForDb, prepareForResponse } from '~/utils/modelUtils';
 import Noco from '~/Noco';
 import { extractProps } from '~/helpers/extractProps';
@@ -8,7 +9,6 @@ import {
   MetaTable,
 } from '~/utils/globals';
 import NocoCache from '~/cache/NocoCache';
-import { Base } from '~/models';
 
 export default class Extension {
   id?: string;
@@ -25,7 +25,11 @@ export default class Extension {
     Object.assign(this, extension);
   }
 
-  public static async get(extensionId: string, ncMeta = Noco.ncMeta) {
+  public static async get(
+    context: NcContext,
+    extensionId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     let extension = await NocoCache.get(
       `${CacheScope.EXTENSION}:${extensionId}`,
       CacheGetType.TYPE_OBJECT,
@@ -33,8 +37,8 @@ export default class Extension {
 
     if (!extension) {
       extension = await ncMeta.metaGet2(
-        null,
-        null,
+        context.workspace_id,
+        context.base_id,
         MetaTable.EXTENSIONS,
         extensionId,
       );
@@ -48,19 +52,24 @@ export default class Extension {
     return extension && new Extension(extension);
   }
 
-  static async list(baseId: string, ncMeta = Noco.ncMeta) {
+  static async list(context: NcContext, baseId: string, ncMeta = Noco.ncMeta) {
     const cachedList = await NocoCache.getList(CacheScope.EXTENSION, [baseId]);
     let { list: extensionList } = cachedList;
     const { isNoneList } = cachedList;
     if (!isNoneList && !extensionList.length) {
-      extensionList = await ncMeta.metaList2(null, null, MetaTable.EXTENSIONS, {
-        condition: {
-          base_id: baseId,
+      extensionList = await ncMeta.metaList2(
+        context.workspace_id,
+        context.base_id,
+        MetaTable.EXTENSIONS,
+        {
+          condition: {
+            base_id: baseId,
+          },
+          orderBy: {
+            created_at: 'asc',
+          },
         },
-        orderBy: {
-          created_at: 'asc',
-        },
-      });
+      );
 
       if (extensionList) {
         extensionList = extensionList.map((extension) =>
@@ -76,6 +85,7 @@ export default class Extension {
   }
 
   public static async insert(
+    context: NcContext,
     extension: Partial<Extension>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -96,16 +106,14 @@ export default class Extension {
       });
     }
 
-    const base = await Base.get(insertObj.base_id, ncMeta);
-
     const { id } = await ncMeta.metaInsert2(
-      base.fk_workspace_id,
-      base.id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.EXTENSIONS,
       prepareForDb(insertObj, ['kv_store', 'meta']),
     );
 
-    return this.get(id, ncMeta).then(async (res) => {
+    return this.get(context, id, ncMeta).then(async (res) => {
       await NocoCache.appendToList(
         CacheScope.EXTENSION,
         [extension.base_id],
@@ -116,12 +124,11 @@ export default class Extension {
   }
 
   public static async update(
+    context: NcContext,
     extensionId: string,
     extension: Partial<Extension>,
     ncMeta = Noco.ncMeta,
   ) {
-    const existingExt = await this.get(extensionId, ncMeta);
-
     const updateObj = extractProps(extension, [
       'fk_user_id',
       'extension_id',
@@ -133,8 +140,8 @@ export default class Extension {
 
     // set meta
     await ncMeta.metaUpdate(
-      existingExt.fk_workspace_id,
-      existingExt.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.EXTENSIONS,
       prepareForDb(updateObj, ['kv_store', 'meta']),
       extensionId,
@@ -145,15 +152,17 @@ export default class Extension {
       prepareForResponse(updateObj, ['kv_store', 'meta']),
     );
 
-    return this.get(extensionId, ncMeta);
+    return this.get(context, extensionId, ncMeta);
   }
 
-  static async delete(extensionId: any, ncMeta = Noco.ncMeta) {
-    const extension = await this.get(extensionId, ncMeta);
-
+  static async delete(
+    context: NcContext,
+    extensionId: any,
+    ncMeta = Noco.ncMeta,
+  ) {
     const res = await ncMeta.metaDelete(
-      extension.fk_workspace_id,
-      extension.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.EXTENSIONS,
       extensionId,
     );

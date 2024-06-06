@@ -1,4 +1,5 @@
 import type { BoolType } from 'nocodb-sdk';
+import type { NcContext } from '~/interface/config';
 import View from '~/models/View';
 import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
@@ -20,7 +21,11 @@ export default class MapViewColumn {
     Object.assign(this, data);
   }
 
-  public static async get(mapViewColumnId: string, ncMeta = Noco.ncMeta) {
+  public static async get(
+    context: NcContext,
+    mapViewColumnId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     let view =
       mapViewColumnId &&
       (await NocoCache.get(
@@ -29,8 +34,8 @@ export default class MapViewColumn {
       ));
     if (!view) {
       view = await ncMeta.metaGet2(
-        null,
-        null,
+        context.workspace_id,
+        context.base_id,
         MetaTable.MAP_VIEW_COLUMNS,
         mapViewColumnId,
       );
@@ -41,7 +46,11 @@ export default class MapViewColumn {
     }
     return view && new MapViewColumn(view);
   }
-  static async insert(column: Partial<MapViewColumn>, ncMeta = Noco.ncMeta) {
+  static async insert(
+    context: NcContext,
+    column: Partial<MapViewColumn>,
+    ncMeta = Noco.ncMeta,
+  ) {
     const insertObj = {
       fk_view_id: column.fk_view_id,
       fk_column_id: column.fk_column_id,
@@ -53,20 +62,20 @@ export default class MapViewColumn {
       source_id: column.source_id,
     };
 
-    const viewRef = await View.get(insertObj.fk_view_id, ncMeta);
+    const viewRef = await View.get(context, insertObj.fk_view_id, ncMeta);
 
     if (!insertObj.source_id) {
       insertObj.source_id = viewRef.source_id;
     }
 
     const { id } = await ncMeta.metaInsert2(
-      viewRef.fk_workspace_id,
-      viewRef.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.MAP_VIEW_COLUMNS,
       insertObj,
     );
 
-    return this.get(id, ncMeta).then(async (viewCol) => {
+    return this.get(context, id, ncMeta).then(async (viewCol) => {
       await NocoCache.appendToList(
         CacheScope.MAP_VIEW_COLUMN,
         [column.fk_view_id],
@@ -77,6 +86,7 @@ export default class MapViewColumn {
   }
 
   public static async list(
+    context: NcContext,
     viewId: string,
     ncMeta = Noco.ncMeta,
   ): Promise<MapViewColumn[]> {
@@ -86,14 +96,19 @@ export default class MapViewColumn {
     let { list: views } = cachedList;
     const { isNoneList } = cachedList;
     if (!isNoneList && !views.length) {
-      views = await ncMeta.metaList2(null, null, MetaTable.MAP_VIEW_COLUMNS, {
-        condition: {
-          fk_view_id: viewId,
+      views = await ncMeta.metaList2(
+        context.workspace_id,
+        context.base_id,
+        MetaTable.MAP_VIEW_COLUMNS,
+        {
+          condition: {
+            fk_view_id: viewId,
+          },
+          orderBy: {
+            order: 'asc',
+          },
         },
-        orderBy: {
-          order: 'asc',
-        },
-      });
+      );
       await NocoCache.setList(CacheScope.MAP_VIEW_COLUMN, [viewId], views);
     }
     views.sort(
@@ -106,12 +121,11 @@ export default class MapViewColumn {
 
   // todo: update prop names
   static async update(
+    context: NcContext,
     columnId: string,
     body: Partial<MapViewColumn>,
     ncMeta = Noco.ncMeta,
   ) {
-    const viewCol = await this.get(columnId, ncMeta);
-
     const updateObj = extractProps(body, [
       'order',
       'show',
@@ -123,8 +137,8 @@ export default class MapViewColumn {
 
     // set meta
     const res = await ncMeta.metaUpdate(
-      viewCol.fk_workspace_id,
-      viewCol.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.MAP_VIEW_COLUMNS,
       updateObj,
       columnId,
@@ -136,9 +150,9 @@ export default class MapViewColumn {
 
     // on view column update, delete any optimised single query cache
     {
-      const viewCol = await this.get(columnId, ncMeta);
-      const view = await View.get(viewCol.fk_view_id, ncMeta);
-      await View.clearSingleQueryCache(view.fk_model_id, [view]);
+      const viewCol = await this.get(context, columnId, ncMeta);
+      const view = await View.get(context, viewCol.fk_view_id, ncMeta);
+      await View.clearSingleQueryCache(context, view.fk_model_id, [view]);
     }
 
     return res;

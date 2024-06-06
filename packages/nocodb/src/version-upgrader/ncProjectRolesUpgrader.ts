@@ -6,7 +6,7 @@ import { MetaTable, RootScopes } from '~/utils/globals';
 
 /** Upgrader for upgrading roles */
 export default async function ({ ncMeta }: NcUpgraderCtx) {
-  const users = await ncMeta.metaList2(null, null, MetaTable.USERS);
+  const users = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.USERS);
 
   for (const user of users) {
     user.roles = user.roles
@@ -22,8 +22,8 @@ export default async function ({ ncMeta }: NcUpgraderCtx) {
       })
       .join(',');
     await ncMeta.metaUpdate(
-      RootScopes.ROOT,
-      RootScopes.ROOT,
+      context.workspace_id,
+      context.base_id,
       MetaTable.USERS,
       { roles: user.roles },
       user.id,

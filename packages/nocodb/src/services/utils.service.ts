@@ -214,7 +214,7 @@ export class UtilsService {
   async aggregatedMetaInfo() {
     const [bases, userCount] = await Promise.all([
       Base.list({}),
-      Noco.ncMeta.metaCount(null, null, MetaTable.USERS),
+      Noco.ncMeta.metaCount(context.workspace_id, context.base_id, MetaTable.USERS),
     ]);
 
     const result: AllMeta = {
@@ -241,13 +241,13 @@ export class UtilsService {
             ] = this.extractResultOrNull(
               await Promise.allSettled([
                 // db tables  count
-                Noco.ncMeta.metaCount(base.id, null, MetaTable.MODELS, {
+                Noco.ncMeta.metaCount(context.workspace_id, context.base_id, MetaTable.MODELS, {
                   condition: {
                     type: 'table',
                   },
                 }),
                 // db views count
-                Noco.ncMeta.metaCount(base.id, null, MetaTable.MODELS, {
+                Noco.ncMeta.metaCount(context.workspace_id, context.base_id, MetaTable.MODELS, {
                   condition: {
                     type: 'view',
                   },
@@ -255,8 +255,8 @@ export class UtilsService {
                 // views count
                 (async () => {
                   const views = await Noco.ncMeta.metaList2(
-                    base.id,
-                    null,
+                    context.workspace_id,
+                    context.base_id,
                     MetaTable.VIEWS,
                   );
                   // grid, form, gallery, kanban and shared count
@@ -305,11 +305,11 @@ export class UtilsService {
                   );
                 })(),
                 // webhooks count
-                Noco.ncMeta.metaCount(base.id, null, MetaTable.HOOKS),
+                Noco.ncMeta.metaCount(context.workspace_id, context.base_id, MetaTable.HOOKS),
                 // filters count
-                Noco.ncMeta.metaCount(base.id, null, MetaTable.FILTER_EXP),
+                Noco.ncMeta.metaCount(context.workspace_id, context.base_id, MetaTable.FILTER_EXP),
                 // sorts count
-                Noco.ncMeta.metaCount(base.id, null, MetaTable.SORT),
+                Noco.ncMeta.metaCount(context.workspace_id, context.base_id, MetaTable.SORT),
                 // row count per base
                 base.getSources().then(async (sources) => {
                   return this.extractResultOrNull(
@@ -323,7 +323,7 @@ export class UtilsService {
                   );
                 }),
                 // base users count
-                Noco.ncMeta.metaCount(null, null, MetaTable.PROJECT_USERS, {
+                Noco.ncMeta.metaCount(context.workspace_id, context.base_id, MetaTable.PROJECT_USERS, {
                   condition: {
                     base_id: base.id,
                   },

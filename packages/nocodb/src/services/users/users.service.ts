@@ -49,7 +49,7 @@ export class UsersService {
 
   async findOne(_email: string) {
     const email = _email.toLowerCase();
-    const user = await this.metaService.metaGet(null, null, MetaTable.USERS, {
+    const user = await this.metaService.metaGet(context.workspace_id, context.base_id, MetaTable.USERS, {
       email,
     });
 
@@ -67,8 +67,8 @@ export class UsersService {
     lastname: any;
   }) {
     return this.metaService.metaInsert2(
-      RootScopes.ROOT,
-      RootScopes.ROOT,
+      context.workspace_id,
+      context.base_id,
       MetaTable.USERS,
       {
         ...param,
@@ -268,7 +268,7 @@ export class UsersService {
   async tokenValidate(param: { token: string }): Promise<any> {
     const token = param.token;
 
-    const user = await Noco.ncMeta.metaGet(null, null, MetaTable.USERS, {
+    const user = await Noco.ncMeta.metaGet(context.workspace_id, context.base_id, MetaTable.USERS, {
       reset_password_token: token,
     });
 
@@ -294,7 +294,7 @@ export class UsersService {
 
     const { token, body } = param;
 
-    const user = await Noco.ncMeta.metaGet(null, null, MetaTable.USERS, {
+    const user = await Noco.ncMeta.metaGet(context.workspace_id, context.base_id, MetaTable.USERS, {
       reset_password_token: token,
     });
 
@@ -342,7 +342,7 @@ export class UsersService {
   }): Promise<any> {
     const { token, req } = param;
 
-    const user = await Noco.ncMeta.metaGet(null, null, MetaTable.USERS, {
+    const user = await Noco.ncMeta.metaGet(context.workspace_id, context.base_id, MetaTable.USERS, {
       email_verification_token: token,
     });
 

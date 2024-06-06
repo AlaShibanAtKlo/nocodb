@@ -38,8 +38,8 @@ function getTnPath(knex: XKnex, tb: Model) {
 
 export default async function ({ ncMeta }: NcUpgraderCtx) {
   const sources: SourceType[] = await ncMeta.metaList2(
-    null,
-    null,
+    context.workspace_id,
+    context.base_id,
     MetaTable.BASES,
   );
   for (const _base of sources) {
@@ -50,7 +50,7 @@ export default async function ({ ncMeta }: NcUpgraderCtx) {
       continue;
     }
 
-    const base = await ncMeta.metaGet2(null, null, MetaTable.PROJECT, {
+    const base = await ncMeta.metaGet2(context.workspace_id, context.base_id, MetaTable.PROJECT, {
       id: source.base_id,
     });
 

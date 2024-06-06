@@ -1,4 +1,5 @@
 import type { CommentType } from 'nocodb-sdk';
+import type { NcContext } from '~/interface/config';
 import Noco from '~/Noco';
 import { MetaTable } from '~/utils/globals';
 import { prepareForDb } from '~/utils/modelUtils';
@@ -25,10 +26,14 @@ export default class Comment implements CommentType {
     Object.assign(this, comment);
   }
 
-  public static async get(commentId: string, ncMeta = Noco.ncMeta) {
+  public static async get(
+    context: NcContext,
+    commentId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     const comment = await ncMeta.metaGet2(
-      null,
-      null,
+      context.workspace_id,
+      context.base_id,
       MetaTable.COMMENTS,
       commentId,
     );
@@ -37,6 +42,7 @@ export default class Comment implements CommentType {
   }
 
   public static async list(
+    context: NcContext,
     {
       row_id,
       fk_model_id,
@@ -59,7 +65,11 @@ export default class Comment implements CommentType {
     return commentList.map((comment) => new Comment(comment));
   }
 
-  public static async insert(comment: Partial<Comment>, ncMeta = Noco.ncMeta) {
+  public static async insert(
+    context: NcContext,
+    comment: Partial<Comment>,
+    ncMeta = Noco.ncMeta,
+  ) {
     const insertObj = extractProps(comment, [
       'id',
       'fk_model_id',
@@ -75,18 +85,17 @@ export default class Comment implements CommentType {
 
     if (!insertObj.fk_model_id) NcError.tableNotFound(insertObj.fk_model_id);
 
-    const model = await Model.getByIdOrName(
-      { id: insertObj.fk_model_id },
-      ncMeta,
-    );
-
     if (!insertObj.source_id) {
+      const model = await Model.getByIdOrName(
+        { id: insertObj.fk_model_id },
+        ncMeta,
+      );
       insertObj.source_id = model.source_id;
     }
 
     const res = await ncMeta.metaInsert2(
-      model.fk_workspace_id,
-      model.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.COMMENTS,
       prepareForDb(insertObj),
     );
@@ -94,31 +103,34 @@ export default class Comment implements CommentType {
     return res;
   }
   public static async update(
+    context: NcContext,
     commentId: string,
     comment: Partial<Comment>,
     ncMeta = Noco.ncMeta,
   ) {
-    const existingComment = await Comment.get(commentId, ncMeta);
+    const existingComment = await Comment.get(context, commentId, ncMeta);
 
     const updateObj = extractProps(comment, ['comment', 'resolved_by']);
 
     await ncMeta.metaUpdate(
-      existingComment.fk_workspace_id,
-      existingComment.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.COMMENTS,
       prepareForDb(updateObj),
       commentId,
     );
 
-    return Comment.get(commentId, ncMeta);
+    return Comment.get(context, commentId, ncMeta);
   }
 
-  static async delete(commentId: string, ncMeta = Noco.ncMeta) {
-    const comment = await Comment.get(commentId, ncMeta);
-
+  static async delete(
+    context: NcContext,
+    commentId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     await ncMeta.metaUpdate(
-      comment.fk_workspace_id,
-      comment.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.COMMENTS,
       { is_deleted: true },
       commentId,
@@ -127,12 +139,14 @@ export default class Comment implements CommentType {
     return true;
   }
 
-  static async deleteRowComments(fk_model_id: string, ncMeta = Noco.ncMeta) {
-    const model = await Model.getByIdOrName({ id: fk_model_id }, ncMeta);
-
+  static async deleteRowComments(
+    context: NcContext,
+    fk_model_id: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     return ncMeta.metaUpdate(
-      model.fk_workspace_id,
-      model.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.COMMENTS,
       {
         is_deleted: true,
@@ -143,10 +157,13 @@ export default class Comment implements CommentType {
     );
   }
 
-  public static async commentsCount(args: {
-    ids: string[];
-    fk_model_id: string;
-  }) {
+  public static async commentsCount(
+    context: NcContext,
+    args: {
+      ids: string[];
+      fk_model_id: string;
+    },
+  ) {
     const audits = await Noco.ncMeta
       .knex(MetaTable.COMMENTS)
       .count('id', { as: 'count' })

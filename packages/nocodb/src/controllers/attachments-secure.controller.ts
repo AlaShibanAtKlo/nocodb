@@ -23,6 +23,8 @@ import { AttachmentsService } from '~/services/attachments.service';
 import { PresignedUrl } from '~/models';
 import { UploadAllowedInterceptor } from '~/interceptors/is-upload-allowed/is-upload-allowed.interceptor';
 import { MetaApiLimiterGuard } from '~/guards/meta-api-limiter.guard';
+import { TenantContext } from '~/decorators/tenant-context.decorator';
+import { NcContext, NcRequest } from '~/interface/config';
 
 @Controller()
 export class AttachmentsSecureController {

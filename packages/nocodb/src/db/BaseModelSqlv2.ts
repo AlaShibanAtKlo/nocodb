@@ -4487,6 +4487,9 @@ class BaseModelSqlv2 {
     await this.handleHooks('after.insert', null, data, req);
     const id = this._extractPksValues(data);
     await Audit.insert({
+      fk_workspace_id: this.model.fk_workspace_id,
+      base_id: this.model.base_id,
+      source_id: this.model.source_id,
       fk_model_id: this.model.id,
       row_id: id,
       op_type: AuditOperationTypes.DATA,
@@ -4514,6 +4517,9 @@ class BaseModelSqlv2 {
     }
 
     await Audit.insert({
+      fk_workspace_id: this.model.fk_workspace_id,
+      base_id: this.model.base_id,
+      source_id: this.model.source_id,
       fk_model_id: this.model.id,
       op_type: AuditOperationTypes.DATA,
       op_sub_type: AuditOperationSubTypes.BULK_UPDATE,
@@ -4541,6 +4547,9 @@ class BaseModelSqlv2 {
     }
 
     await Audit.insert({
+      fk_workspace_id: this.model.fk_workspace_id,
+      base_id: this.model.base_id,
+      source_id: this.model.source_id,
       fk_model_id: this.model.id,
       op_type: AuditOperationTypes.DATA,
       op_sub_type: AuditOperationSubTypes.BULK_DELETE,
@@ -4559,6 +4568,9 @@ class BaseModelSqlv2 {
     await this.handleHooks('after.bulkInsert', null, data, req);
 
     await Audit.insert({
+      fk_workspace_id: this.model.fk_workspace_id,
+      base_id: this.model.base_id,
+      source_id: this.model.source_id,
       fk_model_id: this.model.id,
       op_type: AuditOperationTypes.DATA,
       op_sub_type: AuditOperationSubTypes.BULK_INSERT,
@@ -4614,6 +4626,9 @@ class BaseModelSqlv2 {
       }
     }
     await Audit.insert({
+      fk_workspace_id: this.model.fk_workspace_id,
+      base_id: this.model.base_id,
+      source_id: this.model.source_id,
       fk_model_id: this.model.id,
       row_id: id,
       op_type: AuditOperationTypes.DATA,
@@ -4642,6 +4657,9 @@ class BaseModelSqlv2 {
   public async afterDelete(data: any, _trx: any, req): Promise<void> {
     const id = this._extractPksValues(data);
     await Audit.insert({
+      fk_workspace_id: this.model.fk_workspace_id,
+      base_id: this.model.base_id,
+      source_id: this.model.source_id,
       fk_model_id: this.model.id,
       row_id: id,
       op_type: AuditOperationTypes.DATA,
@@ -5023,6 +5041,9 @@ class BaseModelSqlv2 {
 
   public async afterAddChild(rowId, childId, req): Promise<void> {
     await Audit.insert({
+      fk_workspace_id: this.model.fk_workspace_id,
+      base_id: this.model.base_id,
+      source_id: this.model.source_id,
       fk_model_id: this.model.id,
       op_type: AuditOperationTypes.DATA,
       op_sub_type: AuditOperationSubTypes.LINK_RECORD,
@@ -5191,6 +5212,9 @@ class BaseModelSqlv2 {
 
   public async afterRemoveChild(rowId, childId, req): Promise<void> {
     await Audit.insert({
+      fk_workspace_id: this.model.fk_workspace_id,
+      base_id: this.model.base_id,
+      source_id: this.model.source_id,
       fk_model_id: this.model.id,
       op_type: AuditOperationTypes.DATA,
       op_sub_type: AuditOperationSubTypes.UNLINK_RECORD,

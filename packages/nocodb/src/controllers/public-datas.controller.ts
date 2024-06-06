@@ -12,6 +12,8 @@ import { Request } from 'express';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { PublicDatasService } from '~/services/public-datas.service';
 import { PublicApiLimiterGuard } from '~/guards/public-api-limiter.guard';
+import { TenantContext } from '~/decorators/tenant-context.decorator';
+import { NcContext, NcRequest } from '~/interface/config';
 
 @UseGuards(PublicApiLimiterGuard)
 @Controller()

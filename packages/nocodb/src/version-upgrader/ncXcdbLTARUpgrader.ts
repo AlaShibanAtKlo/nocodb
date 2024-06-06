@@ -100,8 +100,8 @@ async function upgradeModelRelations({
 
     // update the relation as virtual
     await ncMeta.metaUpdate(
-      column.fk_workspace_id,
-      column.base_id,
+      context.workspace_id,
+      context.base_id,
       MetaTable.COL_RELATIONS,
       { virtual: true },
       colOptions.id,
@@ -135,7 +135,7 @@ async function upgradeBaseRelations({
   const sqlClient = await NcConnectionMgrv2.getSqlClient(source, ncMeta.knex);
 
   // get models for the base
-  const models = await ncMeta.metaList2(null, source.id, MetaTable.MODELS);
+  const models = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.MODELS);
 
   // get all columns and filter out relations and upgrade
   for (const model of models) {
@@ -151,7 +151,7 @@ async function upgradeBaseRelations({
 // database to virtual relation and create an index for it
 export default async function ({ ncMeta }: NcUpgraderCtx) {
   // get all xcdb sources
-  const sources = await ncMeta.metaList2(null, null, MetaTable.BASES, {
+  const sources = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.BASES, {
     condition: {
       is_meta: 1,
     },

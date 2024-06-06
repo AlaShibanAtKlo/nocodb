@@ -13,7 +13,7 @@ export default async function ({ ncMeta }: NcUpgraderCtx) {
   const actions = [];
 
   // Get all the base sources
-  const sources = await ncMeta.metaList2(null, null, MetaTable.BASES);
+  const sources = await ncMeta.metaList2(context.workspace_id, context.base_id, MetaTable.BASES);
 
   // Update the base config with the new secret key if we could decrypt the base config with the fallback secret key
   for (const source of sources) {

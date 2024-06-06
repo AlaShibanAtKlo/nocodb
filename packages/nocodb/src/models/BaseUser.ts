@@ -315,10 +315,12 @@ export default class BaseUser {
   }
 
   static async delete(baseId: string, userId: string, ncMeta = Noco.ncMeta) {
+    const base = await Base.get(baseId, ncMeta);
+
     // delete meta
     const response = await ncMeta.metaDelete(
-      null,
-      null,
+      base.fk_workspace_id,
+      base.id,
       MetaTable.PROJECT_USERS,
       {
         fk_user_id: userId,

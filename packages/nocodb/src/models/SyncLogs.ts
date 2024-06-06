@@ -50,8 +50,4 @@ export default class SyncLogs {
     );
     return new SyncLogs({ ...insertObj, id });
   }
-
-  static async delete(syncLogId: any, ncMeta = Noco.ncMeta) {
-    return await ncMeta.metaDelete(null, null, MetaTable.SYNC_LOGS, syncLogId);
-  }
 }

@@ -27,12 +27,11 @@ export default async function (ctx: NcBuilderUpgraderCtx) {
 
     // delete relation
     for (const dupRelation of duplicates) {
-      await ctx.xcMeta.metaDelete(
-        ctx.baseId,
-        ctx.dbAlias,
-        'nc_relations',
-        dupRelation.id,
-      );
+      await ctx.xcMeta.metaDeleteAll('nc_relations', {
+        id: dupRelation.id,
+        base_id: ctx.baseId,
+        db_alias: ctx.dbAlias,
+      });
       {
         const tnModel = await ctx.xcMeta.metaGet(
           ctx.baseId,

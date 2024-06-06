@@ -277,16 +277,16 @@ export class MetaService {
 
   /***
    * Delete meta data
+   * @param workspace_id - Workspace id
    * @param base_id - Base id
-   * @param dbAlias - Database alias
    * @param target - Table name
    * @param idOrCondition - If string, will delete the record with the given id. If object, will delete the record with the given condition.
    * @param xcCondition - Additional nested or complex condition to be added to the query.
    * @param force - If true, will not check if a condition is present in the query builder and will execute the query as is.
    */
   public async metaDelete(
+    workspace_id: string,
     base_id: string,
-    dbAlias: string,
     target: string,
     idOrCondition: string | { [p: string]: any },
     xcCondition?: Condition,
@@ -294,11 +294,29 @@ export class MetaService {
   ): Promise<void> {
     const query = this.knexConnection(target);
 
-    if (base_id !== null && base_id !== undefined) {
+    if (workspace_id === base_id) {
+      if (!Object.values(RootScopes).includes(workspace_id as RootScopes)) {
+        NcError.metaError({
+          message: 'Invalid scope',
+          sql: '',
+        });
+      }
+
+      if (!RootScopeTables[workspace_id].includes(target)) {
+        NcError.metaError({
+          message: 'Table not accessible from this scope',
+          sql: '',
+        });
+      }
+    } else {
+      if (!base_id) {
+        NcError.metaError({
+          message: 'Base ID is required',
+          sql: '',
+        });
+      }
+
       query.where('base_id', base_id);
-    }
-    if (dbAlias !== null && dbAlias !== undefined) {
-      query.where('db_alias', dbAlias);
     }
 
     if (typeof idOrCondition !== 'object') {
@@ -315,6 +333,35 @@ export class MetaService {
     if (!force) {
       this.checkConditionPresent(query, 'delete');
     }
+
+    return query.del();
+  }
+
+  /***
+   * Delete meta data with condition (USE WITH CAUTION)
+   * @param target - Table name
+   * @param idOrCondition - If string, will delete the record with the given id. If object, will delete the record with the given condition.
+   * @param xcCondition - Additional nested or complex condition to be added to the query.
+   */
+  public async metaDeleteAll(
+    target: string,
+    idOrCondition: string | { [p: string]: any },
+    xcCondition?: Condition,
+  ): Promise<void> {
+    const query = this.knexConnection(target);
+
+    if (typeof idOrCondition !== 'object') {
+      query.where('id', idOrCondition);
+    } else if (idOrCondition) {
+      query.where(idOrCondition);
+    }
+
+    if (xcCondition) {
+      query.condition(xcCondition, {});
+    }
+
+    // Check if a condition is present in the query builder and throw an error if not.
+    this.checkConditionPresent(query, 'delete');
 
     return query.del();
   }

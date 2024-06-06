@@ -486,9 +486,14 @@ export default class Model implements TableType {
           break;
       }
       if (colOptionTableName && cacheScopeName) {
-        await ncMeta.metaDelete(null, null, colOptionTableName, {
-          fk_column_id: col.id,
-        });
+        await ncMeta.metaDelete(
+          this.fk_workspace_id,
+          this.base_id,
+          colOptionTableName,
+          {
+            fk_column_id: col.id,
+          },
+        );
         await NocoCache.deepDel(
           `${cacheScopeName}:${col.id}`,
           CacheDelDirection.CHILD_TO_PARENT,
@@ -515,24 +520,39 @@ export default class Model implements TableType {
         );
       }
 
-      await ncMeta.metaDelete(null, null, MetaTable.COL_RELATIONS, {
-        fk_related_model_id: this.id,
-      });
+      await ncMeta.metaDelete(
+        this.fk_workspace_id,
+        this.base_id,
+        MetaTable.COL_RELATIONS,
+        {
+          fk_related_model_id: this.id,
+        },
+      );
     }
 
     await NocoCache.deepDel(
       `${CacheScope.COLUMN}:${this.id}`,
       CacheDelDirection.CHILD_TO_PARENT,
     );
-    await ncMeta.metaDelete(null, null, MetaTable.COLUMNS, {
-      fk_model_id: this.id,
-    });
+    await ncMeta.metaDelete(
+      this.fk_workspace_id,
+      this.base_id,
+      MetaTable.COLUMNS,
+      {
+        fk_model_id: this.id,
+      },
+    );
 
     await NocoCache.deepDel(
       `${CacheScope.MODEL}:${this.id}`,
       CacheDelDirection.CHILD_TO_PARENT,
     );
-    await ncMeta.metaDelete(null, null, MetaTable.MODELS, this.id);
+    await ncMeta.metaDelete(
+      this.fk_workspace_id,
+      this.base_id,
+      MetaTable.MODELS,
+      this.id,
+    );
 
     // delete alias cache
     await NocoCache.del([

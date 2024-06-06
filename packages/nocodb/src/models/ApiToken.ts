@@ -66,7 +66,12 @@ export default class ApiToken implements ApiTokenType {
       `${CacheScope.API_TOKEN}:${token}`,
       CacheDelDirection.CHILD_TO_PARENT,
     );
-    return await ncMeta.metaDelete(null, null, MetaTable.API_TOKENS, { token });
+    return await ncMeta.metaDelete(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.API_TOKENS,
+      { token },
+    );
   }
 
   static async getByToken(token, ncMeta = Noco.ncMeta) {

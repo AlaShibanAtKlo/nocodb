@@ -274,7 +274,12 @@ export default class Filter implements FilterType {
       if (!filter) return;
       for (const f of (await filter?.getChildren()) || [])
         await deleteRecursively(f);
-      await ncMeta.metaDelete(null, null, MetaTable.FILTER_EXP, filter.id);
+      await ncMeta.metaDelete(
+        filter.fk_workspace_id,
+        filter.base_id,
+        MetaTable.FILTER_EXP,
+        filter.id,
+      );
       await NocoCache.deepDel(
         `${CacheScope.FILTER_EXP}:${filter.id}`,
         CacheDelDirection.CHILD_TO_PARENT,
@@ -439,7 +444,12 @@ export default class Filter implements FilterType {
       if (!filter) return;
       for (const f of filter?.children || []) await deleteRecursively(f);
       if (filter.id) {
-        await ncMeta.metaDelete(null, null, MetaTable.FILTER_EXP, filter.id);
+        await ncMeta.metaDelete(
+          filter.fk_workspace_id,
+          filter.base_id,
+          MetaTable.FILTER_EXP,
+          filter.id,
+        );
         await NocoCache.deepDel(
           `${CacheScope.FILTER_EXP}:${filter.id}`,
           CacheDelDirection.CHILD_TO_PARENT,
@@ -462,7 +472,12 @@ export default class Filter implements FilterType {
       if (!filter) return;
       for (const f of filter?.children || []) await deleteRecursively(f);
       if (filter.id) {
-        await ncMeta.metaDelete(null, null, MetaTable.FILTER_EXP, filter.id);
+        await ncMeta.metaDelete(
+          filter.fk_workspace_id,
+          filter.base_id,
+          MetaTable.FILTER_EXP,
+          filter.id,
+        );
         await NocoCache.deepDel(
           `${CacheScope.FILTER_EXP}:${filter.id}`,
           CacheDelDirection.CHILD_TO_PARENT,

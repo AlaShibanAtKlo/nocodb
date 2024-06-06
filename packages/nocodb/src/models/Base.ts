@@ -362,11 +362,16 @@ export default class Base implements BaseType {
       CacheDelDirection.CHILD_TO_PARENT,
     );
 
-    await ncMeta.metaDelete(null, null, MetaTable.AUDIT, {
+    await ncMeta.metaDelete(base.fk_workspace_id, base.id, MetaTable.AUDIT, {
       base_id: baseId,
     });
 
-    return await ncMeta.metaDelete(null, null, MetaTable.PROJECT, baseId);
+    return await ncMeta.metaDelete(
+      RootScopes.BASE,
+      RootScopes.BASE,
+      MetaTable.PROJECT,
+      baseId,
+    );
   }
 
   static async getByUuid(uuid, ncMeta = Noco.ncMeta) {

@@ -834,9 +834,14 @@ export default class Column<T = any> implements ColumnType {
     }
 
     if (colOptionTableName && cacheScopeName) {
-      await ncMeta.metaDelete(null, null, colOptionTableName, {
-        fk_column_id: col.id,
-      });
+      await ncMeta.metaDelete(
+        col.fk_workspace_id,
+        col.base_id,
+        colOptionTableName,
+        {
+          fk_column_id: col.id,
+        },
+      );
       await NocoCache.deepDel(
         `${cacheScopeName}:${col.id}`,
         CacheDelDirection.CHILD_TO_PARENT,
@@ -863,7 +868,9 @@ export default class Column<T = any> implements ColumnType {
       const viewColumns = await ncMeta.metaList2(null, null, table, {
         condition: { fk_column_id: id },
       });
-      await ncMeta.metaDelete(null, null, table, { fk_column_id: id });
+      await ncMeta.metaDelete(col.fk_workspace_id, col.base_id, table, {
+        fk_column_id: id,
+      });
       for (const viewColumn of viewColumns) {
         await NocoCache.deepDel(
           `${cacheScope}:${viewColumn.id}`,
@@ -895,7 +902,12 @@ export default class Column<T = any> implements ColumnType {
     }
 
     // Columns
-    await ncMeta.metaDelete(null, null, MetaTable.COLUMNS, col.id);
+    await ncMeta.metaDelete(
+      col.fk_workspace_id,
+      col.base_id,
+      MetaTable.COLUMNS,
+      col.id,
+    );
     await NocoCache.deepDel(
       `${CacheScope.COLUMN}:${col.id}`,
       CacheDelDirection.CHILD_TO_PARENT,
@@ -919,9 +931,14 @@ export default class Column<T = any> implements ColumnType {
       case UITypes.Lookup: {
         // LookupColumn.insert()
 
-        await ncMeta.metaDelete(null, null, MetaTable.COL_LOOKUP, {
-          fk_column_id: colId,
-        });
+        await ncMeta.metaDelete(
+          oldCol.fk_workspace_id,
+          oldCol.base_id,
+          MetaTable.COL_LOOKUP,
+          {
+            fk_column_id: colId,
+          },
+        );
         await NocoCache.deepDel(
           `${CacheScope.COL_LOOKUP}:${colId}`,
           CacheDelDirection.CHILD_TO_PARENT,
@@ -929,9 +946,14 @@ export default class Column<T = any> implements ColumnType {
         break;
       }
       case UITypes.Rollup: {
-        await ncMeta.metaDelete(null, null, MetaTable.COL_ROLLUP, {
-          fk_column_id: colId,
-        });
+        await ncMeta.metaDelete(
+          oldCol.fk_workspace_id,
+          oldCol.base_id,
+          MetaTable.COL_ROLLUP,
+          {
+            fk_column_id: colId,
+          },
+        );
         await NocoCache.deepDel(
           `${CacheScope.COL_ROLLUP}:${colId}`,
           CacheDelDirection.CHILD_TO_PARENT,
@@ -940,9 +962,14 @@ export default class Column<T = any> implements ColumnType {
       }
 
       case UITypes.LinkToAnotherRecord: {
-        await ncMeta.metaDelete(null, null, MetaTable.COL_RELATIONS, {
-          fk_column_id: colId,
-        });
+        await ncMeta.metaDelete(
+          oldCol.fk_workspace_id,
+          oldCol.base_id,
+          MetaTable.COL_RELATIONS,
+          {
+            fk_column_id: colId,
+          },
+        );
         await NocoCache.deepDel(
           `${CacheScope.COL_RELATION}:${colId}`,
           CacheDelDirection.CHILD_TO_PARENT,
@@ -950,9 +977,14 @@ export default class Column<T = any> implements ColumnType {
         break;
       }
       case UITypes.Formula: {
-        await ncMeta.metaDelete(null, null, MetaTable.COL_FORMULA, {
-          fk_column_id: colId,
-        });
+        await ncMeta.metaDelete(
+          oldCol.fk_workspace_id,
+          oldCol.base_id,
+          MetaTable.COL_FORMULA,
+          {
+            fk_column_id: colId,
+          },
+        );
 
         await NocoCache.deepDel(
           `${CacheScope.COL_FORMULA}:${colId}`,
@@ -961,9 +993,14 @@ export default class Column<T = any> implements ColumnType {
         break;
       }
       case UITypes.QrCode: {
-        await ncMeta.metaDelete(null, null, MetaTable.COL_QRCODE, {
-          fk_column_id: colId,
-        });
+        await ncMeta.metaDelete(
+          oldCol.fk_workspace_id,
+          oldCol.base_id,
+          MetaTable.COL_QRCODE,
+          {
+            fk_column_id: colId,
+          },
+        );
 
         await NocoCache.deepDel(
           `${CacheScope.COL_QRCODE}:${colId}`,
@@ -973,9 +1010,14 @@ export default class Column<T = any> implements ColumnType {
       }
 
       case UITypes.Barcode: {
-        await ncMeta.metaDelete(null, null, MetaTable.COL_BARCODE, {
-          fk_column_id: colId,
-        });
+        await ncMeta.metaDelete(
+          oldCol.fk_workspace_id,
+          oldCol.base_id,
+          MetaTable.COL_BARCODE,
+          {
+            fk_column_id: colId,
+          },
+        );
 
         await NocoCache.deepDel(
           `${CacheScope.COL_BARCODE}:${colId}`,
@@ -986,9 +1028,14 @@ export default class Column<T = any> implements ColumnType {
 
       case UITypes.MultiSelect:
       case UITypes.SingleSelect: {
-        await ncMeta.metaDelete(null, null, MetaTable.COL_SELECT_OPTIONS, {
-          fk_column_id: colId,
-        });
+        await ncMeta.metaDelete(
+          oldCol.fk_workspace_id,
+          oldCol.base_id,
+          MetaTable.COL_SELECT_OPTIONS,
+          {
+            fk_column_id: colId,
+          },
+        );
 
         await NocoCache.deepDel(
           `${CacheScope.COL_SELECT_OPTION}:${colId}:list`,

@@ -423,9 +423,14 @@ export default class Source implements SourceType {
     });
 
     for (const relCol of relColumns) {
-      await ncMeta.metaDelete(null, null, relCol.colOptionTableName, {
-        fk_column_id: relCol.col.id,
-      });
+      await ncMeta.metaDelete(
+        this.fk_workspace_id,
+        this.base_id,
+        relCol.colOptionTableName,
+        {
+          fk_column_id: relCol.col.id,
+        },
+      );
       await NocoCache.deepDel(
         `${relCol.cacheScopeName}:${relCol.col.id}`,
         CacheDelDirection.CHILD_TO_PARENT,
@@ -443,7 +448,12 @@ export default class Source implements SourceType {
 
     await this.sourceCleanup(ncMeta);
 
-    const res = await ncMeta.metaDelete(null, null, MetaTable.BASES, this.id);
+    const res = await ncMeta.metaDelete(
+      this.fk_workspace_id,
+      this.base_id,
+      MetaTable.BASES,
+      this.id,
+    );
 
     await NocoCache.deepDel(
       `${CacheScope.BASE}:${this.id}`,

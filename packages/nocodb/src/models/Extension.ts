@@ -148,9 +148,11 @@ export default class Extension {
   }
 
   static async delete(extensionId: any, ncMeta = Noco.ncMeta) {
+    const extension = await this.get(extensionId, ncMeta);
+
     const res = await ncMeta.metaDelete(
-      null,
-      null,
+      extension.fk_workspace_id,
+      extension.base_id,
       MetaTable.EXTENSIONS,
       extensionId,
     );

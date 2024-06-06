@@ -27,8 +27,8 @@ export default class UserRefreshToken {
     // clear old invalid tokens before inserting new one
     // todo: verify the populated sql query
     await ncMeta.metaDelete(
-      null,
-      null,
+      RootScopes.ROOT,
+      RootScopes.ROOT,
       MetaTable.USER_REFRESH_TOKENS,
       {
         fk_user_id: userRefreshToken.fk_user_id,
@@ -89,15 +89,25 @@ export default class UserRefreshToken {
   }
 
   static async deleteToken(token: string, ncMeta = Noco.ncMeta) {
-    return await ncMeta.metaDelete(null, null, MetaTable.USER_REFRESH_TOKENS, {
-      token,
-    });
+    return await ncMeta.metaDelete(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.USER_REFRESH_TOKENS,
+      {
+        token,
+      },
+    );
   }
 
   static async deleteAllUserToken(userId: string, ncMeta = Noco.ncMeta) {
-    return await ncMeta.metaDelete(null, null, MetaTable.USER_REFRESH_TOKENS, {
-      fk_user_id: userId,
-    });
+    return await ncMeta.metaDelete(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.USER_REFRESH_TOKENS,
+      {
+        fk_user_id: userId,
+      },
+    );
   }
 
   static async getByToken(

@@ -129,9 +129,11 @@ export default class SyncSource {
   }
 
   static async delete(syncSourceId: any, ncMeta = Noco.ncMeta) {
+    const syncSource = await this.get(syncSourceId, ncMeta);
+
     return await ncMeta.metaDelete(
-      null,
-      null,
+      syncSource.fk_workspace_id,
+      syncSource.base_id,
       MetaTable.SYNC_SOURCE,
       syncSourceId,
     );
@@ -140,7 +142,7 @@ export default class SyncSource {
   static async deleteByUserId(userId: string, ncMeta = Noco.ncMeta) {
     if (!userId) NcError.badRequest('User Id is required');
 
-    return await ncMeta.metaDelete(null, null, MetaTable.SYNC_SOURCE, {
+    return await ncMeta.metaDeleteAll(MetaTable.SYNC_SOURCE, {
       fk_user_id: userId,
     });
   }

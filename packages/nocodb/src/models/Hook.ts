@@ -201,6 +201,7 @@ export default class Hook implements HookType {
   }
 
   static async delete(hookId: any, ncMeta = Noco.ncMeta) {
+    const hook = await this.get(hookId, ncMeta);
     // Delete Hook Filters
     const filterList = await ncMeta.metaList2(
       null,
@@ -222,6 +223,11 @@ export default class Hook implements HookType {
       `${CacheScope.HOOK}:${hookId}`,
       CacheDelDirection.CHILD_TO_PARENT,
     );
-    return await ncMeta.metaDelete(null, null, MetaTable.HOOKS, hookId);
+    return await ncMeta.metaDelete(
+      hook.fk_workspace_id,
+      hook.base_id,
+      MetaTable.HOOKS,
+      hookId,
+    );
   }
 }

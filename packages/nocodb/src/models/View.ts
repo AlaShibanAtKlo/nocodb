@@ -1187,13 +1187,18 @@ export default class View implements ViewType {
     const tableScope = this.extractViewTableNameScope(view);
     const columnTable = this.extractViewColumnsTableName(view);
     const columnTableScope = this.extractViewColumnsTableNameScope(view);
-    await ncMeta.metaDelete(null, null, columnTable, {
+    await ncMeta.metaDelete(view.fk_workspace_id, view.base_id, columnTable, {
       fk_view_id: viewId,
     });
-    await ncMeta.metaDelete(null, null, table, {
+    await ncMeta.metaDelete(view.fk_workspace_id, view.base_id, table, {
       fk_view_id: viewId,
     });
-    await ncMeta.metaDelete(null, null, MetaTable.VIEWS, viewId);
+    await ncMeta.metaDelete(
+      view.fk_workspace_id,
+      view.base_id,
+      MetaTable.VIEWS,
+      viewId,
+    );
     await NocoCache.deepDel(
       `${tableScope}:${viewId}`,
       CacheDelDirection.CHILD_TO_PARENT,
@@ -1201,9 +1206,14 @@ export default class View implements ViewType {
 
     // For Calendar View, delete the range associated with viewId
     if (view.type === ViewTypes.CALENDAR) {
-      await ncMeta.metaDelete(null, null, MetaTable.CALENDAR_VIEW_RANGE, {
-        fk_view_id: viewId,
-      });
+      await ncMeta.metaDelete(
+        view.fk_workspace_id,
+        view.base_id,
+        MetaTable.CALENDAR_VIEW_RANGE,
+        {
+          fk_view_id: viewId,
+        },
+      );
       await NocoCache.deepDel(
         `${CacheScope.CALENDAR_VIEW_RANGE}:${viewId}`,
         CacheDelDirection.CHILD_TO_PARENT,

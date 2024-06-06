@@ -27,13 +27,20 @@ export default class Sort {
   }
 
   public static async deleteAll(viewId: string, ncMeta = Noco.ncMeta) {
+    const view = await View.get(viewId, ncMeta);
+
     await NocoCache.deepDel(
       `${CacheScope.SORT}:${viewId}`,
       CacheDelDirection.PARENT_TO_CHILD,
     );
-    await ncMeta.metaDelete(null, null, MetaTable.SORT, {
-      fk_view_id: viewId,
-    });
+    await ncMeta.metaDelete(
+      view.fk_workspace_id,
+      view.base_id,
+      MetaTable.SORT,
+      {
+        fk_view_id: viewId,
+      },
+    );
 
     // on delete, delete any optimised single query cache
     {
@@ -185,7 +192,12 @@ export default class Sort {
   public static async delete(sortId: string, ncMeta = Noco.ncMeta) {
     const sort = await this.get(sortId, ncMeta);
 
-    await ncMeta.metaDelete(null, null, MetaTable.SORT, sortId);
+    await ncMeta.metaDelete(
+      sort.fk_workspace_id,
+      sort.base_id,
+      MetaTable.SORT,
+      sortId,
+    );
 
     await NocoCache.deepDel(
       `${CacheScope.SORT}:${sortId}`,

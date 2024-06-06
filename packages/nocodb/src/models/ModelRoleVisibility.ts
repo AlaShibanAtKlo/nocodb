@@ -114,10 +114,12 @@ export default class ModelRoleVisibility implements ModelRoleVisibilityType {
   async delete() {
     return await ModelRoleVisibility.delete(this.fk_view_id, this.role);
   }
-  static async delete(fk_view_id: string, role: string) {
-    const res = await Noco.ncMeta.metaDelete(
-      null,
-      null,
+  static async delete(fk_view_id: string, role: string, ncMeta = Noco.ncMeta) {
+    const view = await View.get(fk_view_id, ncMeta);
+
+    const res = await ncMeta.metaDelete(
+      view.fk_workspace_id,
+      view.base_id,
       MetaTable.MODEL_ROLE_VISIBILITY,
       {
         fk_view_id,

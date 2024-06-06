@@ -262,7 +262,12 @@ export default class User implements UserType {
     // clear all user related cache
     await this.clearCache(userId, ncMeta);
 
-    return await ncMeta.metaDelete(null, null, MetaTable.USERS, userId);
+    return await ncMeta.metaDelete(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.USERS,
+      userId,
+    );
   }
 
   static async getWithRoles(

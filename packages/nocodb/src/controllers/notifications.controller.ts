@@ -24,6 +24,10 @@ export class NotificationsController {
   @Get('/api/v1/notifications')
   // @Acl('notificationList')
   async notificationList(@Req() req: NcRequest) {
+    if (!req.user?.id) {
+      NcError.authenticationRequired();
+    }
+
     return this.notificationsService.notificationList({
       user: req.user,
       is_deleted: false,
@@ -39,6 +43,10 @@ export class NotificationsController {
     @Body() body,
     @Req() req: NcRequest,
   ) {
+    if (!req.user?.id) {
+      NcError.authenticationRequired();
+    }
+
     return this.notificationsService.notificationUpdate({
       notificationId,
       body: extractProps(body, ['is_read']),
@@ -46,9 +54,28 @@ export class NotificationsController {
     });
   }
 
+  @Delete('/api/v1/notifications/:notificationId')
+  async notificationDelete(
+    @Param('notificationId') notificationId,
+    @Req() req: NcRequest,
+  ) {
+    if (!req.user?.id) {
+      NcError.authenticationRequired();
+    }
+
+    return this.notificationsService.notificationDelete({
+      notificationId,
+      user: req.user,
+    });
+  }
+
   @Post('/api/v1/notifications/mark-all-read')
   @HttpCode(200)
   async markAllRead(@Req() req: NcRequest) {
+    if (!req.user?.id) {
+      NcError.authenticationRequired();
+    }
+
     return this.notificationsService.markAllRead({
       user: req.user,
     });

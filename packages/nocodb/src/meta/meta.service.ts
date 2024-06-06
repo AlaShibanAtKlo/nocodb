@@ -382,7 +382,9 @@ export class MetaService {
       query.select(...fields);
     }
 
-    if (workspace_id === base_id) {
+    if (workspace_id === RootScopes.BYPASS && base_id === RootScopes.BYPASS) {
+      // bypass
+    } else if (workspace_id === base_id) {
       if (!Object.values(RootScopes).includes(workspace_id as RootScopes)) {
         NcError.metaError({
           message: 'Invalid scope',

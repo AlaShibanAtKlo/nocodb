@@ -215,18 +215,23 @@ const createRollupColumn = async (
     relatedTableColumnTitle: string;
   },
 ) => {
+  const ctx = {
+    workspace_id: base.fk_workspace_id,
+    base_id: base.id,
+  };
+
   const childBases = await base.getSources();
-  const childTable = await Model.getByIdOrName({
+  const childTable = await Model.getByIdOrName(ctx, {
     base_id: base.id,
     source_id: childBases[0].id!,
     table_name: relatedTableName,
   });
-  const childTableColumns = await childTable.getColumns();
+  const childTableColumns = await childTable.getColumns(ctx);
   const childTableColumn = await childTableColumns.find(
     (column) => column.title === relatedTableColumnTitle,
   );
 
-  const ltarColumn = (await table.getColumns()).find(
+  const ltarColumn = (await table.getColumns(ctx)).find(
     (column) =>
       (column.uidt === UITypes.Links ||
         column.uidt === UITypes.LinkToAnotherRecord) &&
@@ -264,13 +269,18 @@ const createLookupColumn = async (
     relationColumnId?: string;
   },
 ) => {
+  const ctx = {
+    workspace_id: base.fk_workspace_id,
+    base_id: base.id,
+  };
+
   const childBases = await base.getSources();
-  const childTable = await Model.getByIdOrName({
+  const childTable = await Model.getByIdOrName(ctx, {
     base_id: base.id,
     source_id: childBases[0].id!,
     table_name: relatedTableName,
   });
-  const childTableColumns = await childTable.getColumns();
+  const childTableColumns = await childTable.getColumns(ctx);
   const childTableColumn = await childTableColumns.find(
     (column) => column.title === relatedTableColumnTitle,
   );
@@ -283,11 +293,11 @@ const createLookupColumn = async (
 
   let ltarColumn;
   if (relationColumnId)
-    ltarColumn = (await table.getColumns()).find(
+    ltarColumn = (await table.getColumns(ctx)).find(
       (column) => column.id === relationColumnId,
     );
   else {
-    ltarColumn = (await table.getColumns()).find(
+    ltarColumn = (await table.getColumns(ctx)).find(
       (column) =>
         (column.uidt === UITypes.Links ||
           column.uidt === UITypes.LinkToAnotherRecord) &&
@@ -319,7 +329,12 @@ const createQrCodeColumn = async (
     referencedQrValueTableColumnTitle: string;
   },
 ) => {
-  const columns = await table.getColumns();
+  const ctx = {
+    workspace_id: table.fk_workspace_id,
+    base_id: table.base_id,
+  };
+
+  const columns = await table.getColumns(ctx);
   const referencedQrValueTableColumnId = columns.find(
     (column) => column.title == referencedQrValueTableColumnTitle,
   )['id'];
@@ -346,7 +361,10 @@ const createBarcodeColumn = async (
   },
 ) => {
   const referencedBarcodeValueTableColumnId = await table
-    .getColumns()
+    .getColumns({
+      workspace_id: table.fk_workspace_id,
+      base_id: table.base_id,
+    })
     .then(
       (cols) =>
         cols.find(
@@ -393,6 +411,11 @@ const updateViewColumn = async (
   context,
   { view, column, attr }: { column: Column; view: View; attr: any },
 ) => {
+  const ctx = {
+    workspace_id: view.fk_workspace_id,
+    base_id: view.base_id,
+  };
+
   const res = await request(context.app)
     .patch(`/api/v1/db/meta/views/${view.id}/columns/${column.id}`)
     .set('xc-auth', context.token)
@@ -401,7 +424,7 @@ const updateViewColumn = async (
     });
 
   const updatedColumn: FormViewColumn | GridViewColumn | GalleryViewColumn = (
-    await view.getColumns()
+    await view.getColumns(ctx)
   ).find((column) => column.id === column.id)!;
 
   return updatedColumn;
@@ -411,6 +434,11 @@ const updateColumn = async (
   context,
   { table, column, attr }: { column: Column; table: Model; attr: any },
 ) => {
+  const ctx = {
+    workspace_id: table.fk_workspace_id,
+    base_id: table.base_id,
+  };
+
   const res = await request(context.app)
     .patch(`/api/v2/meta/columns/${column.id}`)
     .set('xc-auth', context.token)
@@ -418,7 +446,7 @@ const updateColumn = async (
       ...attr,
     });
 
-  const updatedColumn: Column = (await table.getColumns()).find(
+  const updatedColumn: Column = (await table.getColumns(ctx)).find(
     (column) => column.id === column.id,
   );
   return updatedColumn;

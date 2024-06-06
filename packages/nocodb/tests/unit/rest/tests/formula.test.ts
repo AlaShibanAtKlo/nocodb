@@ -10,6 +10,10 @@ import type Model from '../../../../src/models/Model';
 import type Base from '~/models/Base';
 
 let context;
+let ctx: {
+  workspace_id: string;
+  base_id: string;
+};
 let base: Base;
 let table: Model;
 let columns: any[];
@@ -43,7 +47,7 @@ function formulaRegExpBased() {
       ],
     });
 
-    columns = await table.getColumns();
+    columns = await table.getColumns(ctx);
 
     const rowAttributes = [];
     for (let i = 0; i < 100; i++) {

@@ -7,7 +7,7 @@ import { createProject } from '../../factory/base';
 import Base from '~/models/Base';
 import { createTable } from '../../factory/table';
 import { createBulkRows, listRow, rowMixedValue } from '../../factory/row';
-import Model from '../../../../src/models/Model';
+import type Model from '../../../../src/models/Model';
 
 const debugMode = true;
 
@@ -179,6 +179,10 @@ async function retrieveRecordsAndValidate(
 }
 
 let context;
+let ctx: {
+  workspace_id: string;
+  base_id: string;
+};
 let base: Base;
 let table: Model;
 let columns: any[];
@@ -206,6 +210,10 @@ function filterTextBased() {
     console.time('#### filterTextBased');
     context = await init();
     base = await createProject(context);
+    ctx = {
+      workspace_id: base.fk_workspace_id,
+      base_id: base.id,
+    };
     table = await createTable(context, base, {
       table_name: 'textBased',
       title: 'TextBased',
@@ -243,7 +251,7 @@ function filterTextBased() {
       ],
     });
 
-    columns = await table.getColumns();
+    columns = await table.getColumns(ctx);
 
     const rowAttributes = [];
     for (let i = 0; i < 400; i++) {
@@ -388,7 +396,7 @@ function filterNumberBased() {
       ],
     });
 
-    columns = await table.getColumns();
+    columns = await table.getColumns(ctx);
 
     const rowAttributes = [];
     for (let i = 0; i < 400; i++) {
@@ -530,7 +538,7 @@ function filterSelectBased() {
       ],
     });
 
-    columns = await table.getColumns();
+    columns = await table.getColumns(ctx);
 
     const rowAttributes = [];
     for (let i = 0; i < 400; i++) {
@@ -627,7 +635,7 @@ function filterDateBased() {
       ],
     });
 
-    columns = await table.getColumns();
+    columns = await table.getColumns(ctx);
 
     const rowAttributes = [];
     for (let i = 0; i < 800; i++) {

@@ -210,10 +210,12 @@ function filterTextBased() {
     console.time('#### filterTextBased');
     context = await init();
     base = await createProject(context);
+
     ctx = {
       workspace_id: base.fk_workspace_id,
       base_id: base.id,
     };
+
     table = await createTable(context, base, {
       table_name: 'textBased',
       title: 'TextBased',
@@ -354,6 +356,12 @@ function filterNumberBased() {
     console.time('#### filterNumberBased');
     context = await init();
     base = await createProject(context);
+
+    ctx = {
+      workspace_id: base.fk_workspace_id,
+      base_id: base.id,
+    };
+
     table = await createTable(context, base, {
       table_name: 'numberBased',
       title: 'numberBased',
@@ -514,6 +522,12 @@ function filterSelectBased() {
     console.time('#### filterSelectBased');
     context = await init();
     base = await createProject(context);
+
+    ctx = {
+      workspace_id: base.fk_workspace_id,
+      base_id: base.id,
+    };
+
     table = await createTable(context, base, {
       table_name: 'selectBased',
       title: 'selectBased',
@@ -618,6 +632,12 @@ function filterDateBased() {
     console.time('#### filterDateBased');
     context = await init();
     base = await createProject(context);
+
+    ctx = {
+      workspace_id: base.fk_workspace_id,
+      base_id: base.id,
+    };
+
     table = await createTable(context, base, {
       table_name: 'dateBased',
       title: 'dateBased',

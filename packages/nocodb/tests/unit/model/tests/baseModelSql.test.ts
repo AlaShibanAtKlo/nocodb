@@ -498,6 +498,7 @@ function baseModelSqlTests() {
       ),
       model: childTable,
       view,
+      context: ctx,
     });
     const updatedChildRow = await childBaseModel.readByPk(
       insertedChildRow['Id'],
@@ -575,6 +576,7 @@ function baseModelSqlTests() {
       ),
       model: childTable,
       view,
+      context: ctx,
     });
     const updatedChildRow = await childBaseModel.readByPk(
       insertedChildRow['Id'],

@@ -42,7 +42,7 @@ function tableStaticTest() {
   let sakilaProject: Base;
   let customerTable: Model;
   let customerColumns;
-  let ctx: {
+  let sakilaCtx: {
     workspace_id: string;
     base_id: string;
   };
@@ -54,16 +54,16 @@ function tableStaticTest() {
     sakilaProject = await createSakilaProject(context);
     base = await createProject(context);
 
-    ctx = {
-      workspace_id: base.fk_workspace_id,
-      base_id: base.id,
+    sakilaCtx = {
+      workspace_id: sakilaProject.fk_workspace_id,
+      base_id: sakilaProject.id,
     };
 
     customerTable = await getTable({
       base: sakilaProject,
       name: 'customer',
     });
-    customerColumns = await customerTable.getColumns(ctx);
+    customerColumns = await customerTable.getColumns(sakilaCtx);
     console.timeEnd('#### tableTest');
   });
 
@@ -382,7 +382,7 @@ function tableStaticTest() {
   // todo: Add export test for views
   it('Nested row list hm', async () => {
     const rowId = 1;
-    const rentalListColumn = (await customerTable.getColumns(ctx)).find(
+    const rentalListColumn = (await customerTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'Rentals',
     )!;
     const response = await request(context.app)
@@ -400,7 +400,7 @@ function tableStaticTest() {
   });
   it('Nested row list hm with limit and offset', async () => {
     const rowId = 1;
-    const rentalListColumn = (await customerTable.getColumns(ctx)).find(
+    const rentalListColumn = (await customerTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'Rentals',
     )!;
     const response = await request(context.app)
@@ -425,7 +425,7 @@ function tableStaticTest() {
   });
   it('Row list hm with invalid table id', async () => {
     const rowId = 1;
-    const rentalListColumn = (await customerTable.getColumns(ctx)).find(
+    const rentalListColumn = (await customerTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'Rentals',
     )!;
     const response = await request(context.app)
@@ -446,7 +446,7 @@ function tableStaticTest() {
       name: 'actor',
     });
     await getTable({ base: sakilaProject, name: 'film' });
-    const filmListColumn = (await actorTable.getColumns(ctx)).find(
+    const filmListColumn = (await actorTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'Films',
     )!;
     const response = await request(context.app)
@@ -469,7 +469,7 @@ function tableStaticTest() {
       name: 'actor',
     });
     await getTable({ base: sakilaProject, name: 'film' });
-    const filmListColumn = (await actorTable.getColumns(ctx)).find(
+    const filmListColumn = (await actorTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'Films',
     )!;
     const response = await request(context.app)
@@ -499,7 +499,7 @@ function tableStaticTest() {
       base: sakilaProject,
       name: 'actor',
     });
-    const filmListColumn = (await actorTable.getColumns(ctx)).find(
+    const filmListColumn = (await actorTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'Films',
     )!;
     const response = await request(context.app)
@@ -516,7 +516,7 @@ function tableStaticTest() {
   });
   it('Create hm relation with invalid table id', async () => {
     const rowId = 1;
-    const rentalListColumn = (await customerTable.getColumns(ctx)).find(
+    const rentalListColumn = (await customerTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'Rentals',
     )!;
     const refId = 1;
@@ -533,7 +533,7 @@ function tableStaticTest() {
   });
   it('Create hm relation with non ltar column', async () => {
     const rowId = 1;
-    const firstNameColumn = (await customerTable.getColumns(ctx)).find(
+    const firstNameColumn = (await customerTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'FirstName',
     )!;
     const refId = 1;
@@ -567,7 +567,7 @@ function tableStaticTest() {
   });
   it('List hm with non ltar column', async () => {
     const rowId = 1;
-    const firstNameColumn = (await customerTable.getColumns(ctx)).find(
+    const firstNameColumn = (await customerTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'FirstName',
     )!;
 
@@ -580,7 +580,7 @@ function tableStaticTest() {
   });
   it('List mm with non ltar column', async () => {
     const rowId = 1;
-    const firstNameColumn = (await customerTable.getColumns(ctx)).find(
+    const firstNameColumn = (await customerTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'FirstName',
     )!;
 
@@ -593,7 +593,7 @@ function tableStaticTest() {
   });
   it('Exclude list hm', async () => {
     const rowId = 1;
-    const rentalListColumn = (await customerTable.getColumns(ctx)).find(
+    const rentalListColumn = (await customerTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'Rentals',
     )!;
 
@@ -611,7 +611,7 @@ function tableStaticTest() {
   });
   it('Exclude list hm with limit and offset', async () => {
     const rowId = 1;
-    const rentalListColumn = (await customerTable.getColumns(ctx)).find(
+    const rentalListColumn = (await customerTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'Rentals',
     )!;
 
@@ -642,7 +642,7 @@ function tableStaticTest() {
       base: sakilaProject,
       name: 'actor',
     });
-    const filmListColumn = (await actorTable.getColumns(ctx)).find(
+    const filmListColumn = (await actorTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'Films',
     )!;
 
@@ -664,7 +664,7 @@ function tableStaticTest() {
       base: sakilaProject,
       name: 'actor',
     });
-    const filmListColumn = (await actorTable.getColumns(ctx)).find(
+    const filmListColumn = (await actorTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'Films',
     )!;
 
@@ -695,7 +695,7 @@ function tableStaticTest() {
       base: sakilaProject,
       name: 'address',
     });
-    const cityColumn = (await addressTable.getColumns(ctx)).find(
+    const cityColumn = (await addressTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'City',
     )!;
 
@@ -715,7 +715,7 @@ function tableStaticTest() {
       base: sakilaProject,
       name: 'address',
     });
-    const cityColumn = (await addressTable.getColumns(ctx)).find(
+    const cityColumn = (await addressTable.getColumns(sakilaCtx)).find(
       (column) => column.title === 'City',
     )!;
 
@@ -736,7 +736,7 @@ function tableStaticTest() {
   it('Get grouped data list', async function () {
     const filmTable = await getTable({ base: sakilaProject, name: 'film' });
 
-    const filmColumns = await filmTable.getColumns(ctx);
+    const filmColumns = await filmTable.getColumns(sakilaCtx);
 
     const ratingColumn = filmColumns.find((c) => c.column_name === 'rating');
 

@@ -1739,7 +1739,7 @@ function viewRowTests() {
       name: 'Film',
     });
 
-    const columns = await table.getColumns(ctx);
+    const columns = await table.getColumns(sakilaCtx);
 
     // get rows
     const rows = await listRow({

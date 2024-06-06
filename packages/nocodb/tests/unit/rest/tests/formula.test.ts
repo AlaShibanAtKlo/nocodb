@@ -24,6 +24,12 @@ function formulaRegExpBased() {
   beforeEach(async function () {
     context = await init();
     base = await createProject(context);
+
+    ctx = {
+      workspace_id: context.workspace_id,
+      base_id: base.id,
+    };
+
     table = await createTable(context, base, {
       table_name: 'sampleTable',
       title: 'sampleTable',

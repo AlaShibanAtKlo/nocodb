@@ -45,7 +45,29 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       exception instanceof NcBaseError ? null : extractDBError(exception);
 
     // skip unnecessary error logging
-    this.logError(exception, request);
+    if (
+      process.env.NC_ENABLE_ALL_API_ERROR_LOGGING === 'true' ||
+      !(
+        dbError ||
+        exception instanceof BadRequest ||
+        exception instanceof AjvError ||
+        exception instanceof Unauthorized ||
+        exception instanceof Forbidden ||
+        exception instanceof NotFound ||
+        exception instanceof UnprocessableEntity ||
+        exception instanceof SsoError ||
+        exception instanceof NotFoundException ||
+        exception instanceof ThrottlerException ||
+        exception instanceof ExternalError ||
+        (exception instanceof NcBaseErrorv2 &&
+          ![
+            NcErrorType.INTERNAL_SERVER_ERROR,
+            NcErrorType.DATABASE_ERROR,
+            NcErrorType.UNKNOWN_ERROR,
+          ].includes(exception.error))
+      )
+    )
+      this.logError(exception, request);
 
     if (exception instanceof ThrottlerException) {
       this.logger.warn(

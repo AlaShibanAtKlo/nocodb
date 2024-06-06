@@ -1382,12 +1382,13 @@ export default class Column<T = any> implements ColumnType {
   }
 
   static async updateTargetView(
+    context: NcContext,
     { colId, fk_target_view_id }: { colId: string; fk_target_view_id: string },
     ncMeta = Noco.ncMeta,
   ) {
     await ncMeta.metaUpdate(
-      null,
-      null,
+      context.workspace_id,
+      context.base_id,
       MetaTable.COL_RELATIONS,
       {
         fk_target_view_id,

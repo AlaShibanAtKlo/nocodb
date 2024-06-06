@@ -175,6 +175,7 @@ export default class LinkToAnotherRecordColumn {
   }
 
   static async update(
+    _context: NcContext,
     _fk_column_id: string,
     _param: { fk_target_view_id: string | null },
   ) {

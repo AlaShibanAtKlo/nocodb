@@ -747,6 +747,7 @@ export default class Filter implements FilterType {
   }
 
   static async rootFilterListByLink(
+    _context: NcContext,
     { columnId: _columnId }: { columnId: any },
     _ncMeta = Noco.ncMeta,
   ) {

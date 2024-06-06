@@ -501,7 +501,9 @@ export class PublicDatasService {
         baseModel.readByPk,
       )(
         (column.meta?.enableConditions
-          ? await Filter.rootFilterListByLink({ columnId: param.columnId })
+          ? await Filter.rootFilterListByLink(context, {
+              columnId: param.columnId,
+            })
           : []) || [],
       );
 

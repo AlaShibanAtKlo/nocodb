@@ -347,7 +347,7 @@ export class ColumnsService {
               (colBody as Column<LinkToAnotherRecordColumn>).colOptions
                 .fk_target_view_id === null
             ) {
-              await Column.updateTargetView({
+              await Column.updateTargetView(context, {
                 colId: param.columnId,
                 fk_target_view_id: (
                   colBody as Column<LinkToAnotherRecordColumn>

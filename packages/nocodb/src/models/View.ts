@@ -1363,8 +1363,8 @@ export default class View implements ViewType {
     if (view?.id) {
       // get all Links associated with the view and remove the view from the link
       const links = await ncMeta.metaList2(
-        null,
-        null,
+        context.workspace_id,
+        context.base_id,
         MetaTable.COL_RELATIONS,
         {
           condition: {
@@ -1374,7 +1374,7 @@ export default class View implements ViewType {
       );
 
       for (const link of links) {
-        await LinkToAnotherRecordColumn.update(link.fk_column_id, {
+        await LinkToAnotherRecordColumn.update(context, link.fk_column_id, {
           fk_target_view_id: null,
         });
       }

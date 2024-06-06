@@ -1591,6 +1591,26 @@ class BaseModelSqlv2 {
     const childTable = await (
       await relColOptions.getParentColumn(this.context)
     ).getModel(this.context);
+
+    const childView = await relColOptions.getChildView(this.context);
+    let listArgs: any = {};
+    if (childView) {
+      const { dependencyFields } = await getAst(this.context, {
+        model: childTable,
+        query: {},
+        view: childView,
+        throwErrorIfInvalidParams: false,
+      });
+
+      listArgs = dependencyFields;
+      try {
+        listArgs.filterArr = JSON.parse(listArgs.filterArrJson);
+      } catch (e) {}
+      try {
+        listArgs.sortArr = JSON.parse(listArgs.sortArrJson);
+      } catch (e) {}
+    }
+
     const parentTable = await (
       await relColOptions.getChildColumn(this.context)
     ).getModel(this.context);
@@ -1741,6 +1761,7 @@ class BaseModelSqlv2 {
     const childTable = await (
       await relColOptions.getParentColumn(this.context)
     ).getModel(this.context);
+
     const parentTable = await (
       await relColOptions.getChildColumn(this.context)
     ).getModel(this.context);
@@ -1859,6 +1880,18 @@ class BaseModelSqlv2 {
       dbDriver: this.dbDriver,
       model: childTable,
     });
+    const childView = await relColOptions.getChildView(this.context);
+    let listArgs: any = {};
+    if (childView) {
+      const { dependencyFields } = await getAst(this.context, {
+        model: childTable,
+        query: {},
+        view: childView,
+        throwErrorIfInvalidParams: false,
+      });
+      listArgs = dependencyFields;
+    }
+
     const parentTable = await (
       await relColOptions.getChildColumn(this.context)
     ).getModel(this.context);
@@ -2073,12 +2106,15 @@ class BaseModelSqlv2 {
       (c) => c.id === colId,
     );
 
-    const relColOptions =
-      (await relColumn.getColOptions()) as LinkToAnotherRecordColumn;
+    const relColOptions = (await relColumn.getColOptions(
+      this.context,
+    )) as LinkToAnotherRecordColumn;
 
-    const cn = (await relColOptions.getChildColumn()).column_name;
-    const rcn = (await relColOptions.getParentColumn()).column_name;
-    const childTable = await (await relColOptions.getChildColumn()).getModel();
+    const cn = (await relColOptions.getChildColumn(this.context)).column_name;
+    const rcn = (await relColOptions.getParentColumn(this.context)).column_name;
+    const childTable = await (
+      await relColOptions.getChildColumn(this.context)
+    ).getModel(this.context);
     const parentTable = await (
       await relColOptions.getParentColumn()
     ).getModel();
@@ -2129,16 +2165,19 @@ class BaseModelSqlv2 {
     const relColumn = (await this.model.getColumns()).find(
       (c) => c.id === colId,
     );
-    const relColOptions =
-      (await relColumn.getColOptions()) as LinkToAnotherRecordColumn;
+    const relColOptions = (await relColumn.getColOptions(
+      this.context,
+    )) as LinkToAnotherRecordColumn;
 
     const rcn = (await relColOptions.getParentColumn()).column_name;
     const parentTable = await (
-      await relColOptions.getParentColumn()
-    ).getModel();
-    const cn = (await relColOptions.getChildColumn()).column_name;
-    const childTable = await (await relColOptions.getChildColumn()).getModel();
-    const parentModel = await Model.getBaseModelSQL({
+      await relColOptions.getParentColumn(this.context)
+    ).getModel(this.context);
+    const cn = (await relColOptions.getChildColumn(this.context)).column_name;
+    const childTable = await (
+      await relColOptions.getChildColumn(this.context)
+    ).getModel(this.context);
+    const parentModel = await Model.getBaseModelSQL(this.context, {
       dbDriver: this.dbDriver,
       model: parentTable,
     });
@@ -2446,65 +2485,23 @@ class BaseModelSqlv2 {
       this.context,
     )) as LinkToAnotherRecordColumn;
 
-    const rcn = (await relColOptions.getParentColumn(this.context)).column_name;
-    const parentTable = await (
-      await relColOptions.getParentColumn(this.context)
-    ).getModel(this.context);
-    const cn = (await relColOptions.getChildColumn(this.context)).column_name;
-    const childTable = await (
-      await relColOptions.getChildColumn(this.context)
-    ).getModel(this.context);
-    const parentModel = await Model.getBaseModelSQL(this.context, {
-      dbDriver: this.dbDriver,
-      model: parentTable,
-    });
-    const childModel = await Model.getBaseModelSQL(this.context, {
-      dbDriver: this.dbDriver,
-      model: childTable,
-    });
-
-    const rtn = this.getTnPath(parentTable);
-    const tn = this.getTnPath(childTable);
-    await childTable.getColumns(this.context);
-
-    // one-to-one relation is combination of both hm and bt to identify table which have
-    // foreign key column(similar to bt) we are adding a boolean flag `bt` under meta
-    const isBt = relColumn.meta?.bt;
-
-    const qb = this.dbDriver(isBt ? rtn : tn).where((qb) => {
-      qb.whereNotIn(
-        isBt ? rcn : cn,
-        this.dbDriver(isBt ? tn : rtn)
-          .select(isBt ? cn : rcn)
-          .where(_wherePk((isBt ? childTable : parentTable).primaryKeys, cid))
-          .whereNotNull(isBt ? cn : rcn),
-      ).orWhereNull(isBt ? rcn : cn);
-    });
-
-    if (+rest?.shuffle) {
-      await this.shuffle({ qb });
-    }
-
-    await (isBt ? parentModel : childModel).selectObject({ qb });
-
-    const aliasColObjMap = await parentTable.getAliasColObjMap(this.context);
-    const filterObj = extractFilterFromXwhere(where, aliasColObjMap);
-    await conditionV2(this, filterObj, qb);
-
-    // sort by primary key if not autogenerated string
-    // if autogenerated string sort by created_at column if present
-    if (parentTable.primaryKey && parentTable.primaryKey.ai) {
-      qb.orderBy(parentTable.primaryKey.column_name);
-    } else if (
-      parentTable.columns.find((c) => c.column_name === 'created_at')
-    ) {
-      qb.orderBy('created_at');
-    }
-
-    applyPaginate(qb, rest);
-
-    const proto = await (isBt ? parentModel : childModel).getProto();
-    const data = await this.execAndParse(
+    const filter = extractFilterFromXwhere(where, childAliasColMap);
+    await conditionV2(
+      this,
+      [
+        ...(view
+          ? [
+              new Filter({
+                children:
+                  (await Filter.rootFilterList(this.context, {
+                    viewId: view.id,
+                  })) || [],
+                is_group: true,
+              }),
+            ]
+          : []),
+        ...filter,
+      ],
       qb,
       await (isBt ? parentTable : childTable).getColumns(this.context),
     );

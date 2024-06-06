@@ -124,14 +124,20 @@ export class GqlApiBuilder extends BaseApiBuilder<Noco> implements XcMetaMgr {
 
       if (meta.manyToMany) {
         for (const mm of meta.manyToMany) {
-          await this.xcMeta.metaInsert2(this.baseId, null, 'nc_loaders', {
-            title: `${mm.tn}Mm${mm.rtn}List`,
-            parent: mm.tn,
-            child: mm.rtn,
-            relation: 'mm',
-            resolver: 'mmlist',
-            dbAlias: this.dbAlias,
-          });
+          await this.xcMeta.metaInsert2(
+            this.baseId,
+            null,
+            'nc_loaders',
+            {
+              title: `${mm.tn}Mm${mm.rtn}List`,
+              parent: mm.tn,
+              child: mm.rtn,
+              relation: 'mm',
+              resolver: 'mmlist',
+              dbAlias: this.dbAlias,
+            },
+            true,
+          );
         }
       }
     }

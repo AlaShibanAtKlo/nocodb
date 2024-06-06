@@ -38,6 +38,7 @@ export default class ApiToken implements ApiTokenType {
         token,
         fk_user_id: apiToken.fk_user_id,
       },
+      true,
     );
     return this.getByToken(token).then(async (apiToken) => {
       await NocoCache.appendToList(

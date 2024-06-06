@@ -73,16 +73,22 @@ export class RestApiBuilder extends BaseApiBuilder<Noco> {
               },
             ))
           ) {
-            await this.xcMeta.metaInsert2(this.baseId, null, 'nc_routes', {
-              acl: JSON.stringify(route.acl),
-              handler: JSON.stringify(route.handler),
-              order: i,
-              path: route.path,
-              tn: meta.tn,
-              title: meta.tn,
-              type: route.type,
-              dbAlias: this.dbAlias,
-            });
+            await this.xcMeta.metaInsert2(
+              this.baseId,
+              null,
+              'nc_routes',
+              {
+                acl: JSON.stringify(route.acl),
+                handler: JSON.stringify(route.handler),
+                order: i,
+                path: route.path,
+                tn: meta.tn,
+                title: meta.tn,
+                type: route.type,
+                dbAlias: this.dbAlias,
+              },
+              true,
+            );
           } else {
             await this.xcMeta.metaUpdate(
               this.baseId,

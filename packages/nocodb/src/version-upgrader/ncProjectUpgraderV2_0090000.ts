@@ -26,7 +26,7 @@ import View from '~/models/View';
 import Sort from '~/models/Sort';
 import Filter from '~/models/Filter';
 import ModelRoleVisibility from '~/models/ModelRoleVisibility';
-import { MetaTable } from '~/utils/globals';
+import { MetaTable, RootScopes } from '~/utils/globals';
 import Hook from '~/models/Hook';
 import FormViewColumn from '~/models/FormViewColumn';
 import GridViewColumn from '~/models/GridViewColumn';
@@ -1162,23 +1162,28 @@ async function migratePlugins(ncMeta: any) {
   const plugins: Array<any> = await ncMeta.metaList2(null, null, 'nc_plugins');
 
   for (const plugin of plugins) {
-    await ncMeta.metaInsert2(null, null, MetaTable.PLUGIN, {
-      title: plugin.title,
-      description: plugin.description,
-      active: plugin.active,
-      version: plugin.version,
-      docs: plugin.docs,
-      status: plugin.status,
-      status_details: plugin.status_details,
-      logo: plugin.logo,
-      tags: plugin.tags,
-      category: plugin.category,
-      input: plugin.input,
-      input_schema: plugin.input_schema,
-      creator: plugin.creator,
-      creator_website: plugin.creator_website,
-      price: plugin.price,
-    });
+    await ncMeta.metaInsert2(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.PLUGIN,
+      {
+        title: plugin.title,
+        description: plugin.description,
+        active: plugin.active,
+        version: plugin.version,
+        docs: plugin.docs,
+        status: plugin.status,
+        status_details: plugin.status_details,
+        logo: plugin.logo,
+        tags: plugin.tags,
+        category: plugin.category,
+        input: plugin.input,
+        input_schema: plugin.input_schema,
+        creator: plugin.creator,
+        creator_website: plugin.creator_website,
+        price: plugin.price,
+      },
+    );
   }
 }
 

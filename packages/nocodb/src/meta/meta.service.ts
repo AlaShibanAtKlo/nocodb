@@ -124,7 +124,7 @@ export class MetaService {
     };
 
     if (workspace_id === base_id) {
-      if (!(workspace_id in RootScopes)) {
+      if (!Object.values(RootScopes).includes(workspace_id as RootScopes)) {
         NcError.metaError({
           message: 'Invalid scope',
           sql: '',

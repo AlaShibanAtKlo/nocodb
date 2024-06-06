@@ -100,6 +100,7 @@ export default class NcUpgrader {
             key: NcUpgrader.STORE_KEY,
             value: JSON.stringify(configObj),
           },
+          true,
         );
         if (isOld) {
           await this.upgrade(ctx);

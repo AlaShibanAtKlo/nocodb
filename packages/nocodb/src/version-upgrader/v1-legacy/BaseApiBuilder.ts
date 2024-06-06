@@ -234,6 +234,7 @@ export default abstract class BaseApiBuilder<T extends Noco> {
           value: JSON.stringify(configObj),
           dbAlias: this.dbAlias,
         },
+        true,
       );
       if (isOld) {
         await this.xcUpgrade();

@@ -74,6 +74,7 @@ export default class Store {
         RootScopes.ROOT,
         MetaTable.STORE,
         insertObj,
+        true,
       );
     }
     if (store.key) await NocoCache.del(`${CacheScope.STORE}:${store.key}`);

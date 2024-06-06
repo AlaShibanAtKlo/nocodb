@@ -13,7 +13,7 @@ import type { MetaService } from '~/meta/meta.service';
 import type { IEventEmitter } from '~/modules/event-emitter/event-emitter.interface';
 import type { Express } from 'express';
 import type http from 'http';
-import { MetaTable } from '~/utils/globals';
+import { MetaTable, RootScopes } from '~/utils/globals';
 import { AppModule } from '~/app.module';
 import { isEE } from '~/utils';
 
@@ -151,10 +151,16 @@ export default class Noco {
           })
         )?.value;
         if (!secret) {
-          await this._ncMeta.metaInsert2(null, null, MetaTable.STORE, {
-            key: 'nc_auth_jwt_secret',
-            value: (secret = uuidv4()),
-          });
+          await this._ncMeta.metaInsert2(
+            RootScopes.ROOT,
+            RootScopes.ROOT,
+            MetaTable.STORE,
+            {
+              key: 'nc_auth_jwt_secret',
+              value: (secret = uuidv4()),
+            },
+            true,
+          );
         }
         this.config.auth.jwt.secret = secret;
       }
@@ -171,10 +177,16 @@ export default class Noco {
       })
     )?.value;
     if (!serverId) {
-      await this._ncMeta.metaInsert2(null, null, MetaTable.STORE, {
-        key: 'nc_server_id',
-        value: (serverId = T.id),
-      });
+      await this._ncMeta.metaInsert2(
+        RootScopes.ROOT,
+        RootScopes.ROOT,
+        MetaTable.STORE,
+        {
+          key: 'nc_server_id',
+          value: (serverId = T.id),
+        },
+        true,
+      );
     }
     process.env.NC_SERVER_UUID = serverId;
   }

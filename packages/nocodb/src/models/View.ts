@@ -1731,48 +1731,48 @@ export default class View implements ViewType {
     switch (view.type) {
       case ViewTypes.GRID:
         await ncMeta.bulkMetaInsert(
-          null,
-          null,
+          view.fk_workspace_id,
+          view.base_id,
           MetaTable.GRID_VIEW_COLUMNS,
           insertObjs,
         );
         break;
       case ViewTypes.GALLERY:
         await ncMeta.bulkMetaInsert(
-          null,
-          null,
+          view.fk_workspace_id,
+          view.base_id,
           MetaTable.GALLERY_VIEW_COLUMNS,
           insertObjs,
         );
         break;
       case ViewTypes.MAP:
         await ncMeta.bulkMetaInsert(
-          null,
-          null,
+          view.fk_workspace_id,
+          view.base_id,
           MetaTable.MAP_VIEW_COLUMNS,
           insertObjs,
         );
         break;
       case ViewTypes.KANBAN:
         await ncMeta.bulkMetaInsert(
-          null,
-          null,
+          view.fk_workspace_id,
+          view.base_id,
           MetaTable.KANBAN_VIEW_COLUMNS,
           insertObjs,
         );
         break;
       case ViewTypes.FORM:
         await ncMeta.bulkMetaInsert(
-          null,
-          null,
+          view.fk_workspace_id,
+          view.base_id,
           MetaTable.FORM_VIEW_COLUMNS,
           insertObjs,
         );
         break;
       case ViewTypes.CALENDAR:
         await ncMeta.bulkMetaInsert(
-          null,
-          null,
+          view.fk_workspace_id,
+          view.base_id,
           MetaTable.CALENDAR_VIEW_COLUMNS,
           insertObjs,
         );
@@ -1973,11 +1973,16 @@ export default class View implements ViewType {
         await fn(filter);
       }
 
-      await ncMeta.bulkMetaInsert(null, null, MetaTable.SORT, sortInsertObjs);
+      await ncMeta.bulkMetaInsert(
+        table.fk_workspace_id,
+        table.base_id,
+        MetaTable.SORT,
+        sortInsertObjs,
+      );
 
       await ncMeta.bulkMetaInsert(
-        null,
-        null,
+        table.fk_workspace_id,
+        table.base_id,
         MetaTable.FILTER_EXP,
         filterInsertObjs,
         true,

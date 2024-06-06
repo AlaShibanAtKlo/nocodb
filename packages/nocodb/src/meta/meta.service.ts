@@ -158,15 +158,15 @@ export class MetaService {
 
   /***
    * Insert multiple records into meta data
-   * @param base_id - Base id
-   * @param source_id - Source id
+   * @param workspace_id - Workspace id
+   * @param base_id - Source id
    * @param target - Table name
    * @param data - Data to be inserted
    * @param ignoreIdGeneration - If true, will not generate id for the record
    */
   public async bulkMetaInsert(
+    workspace_id: string,
     base_id: string,
-    source_id: string,
     target: string,
     data: any | any[],
     ignoreIdGeneration?: boolean,
@@ -183,8 +183,29 @@ export class MetaService {
       updated_at: at,
     };
 
-    if (source_id !== null) commonProps.source_id = source_id;
-    if (base_id !== null) commonProps.base_id = base_id;
+    if (workspace_id === base_id) {
+      if (!Object.values(RootScopes).includes(workspace_id as RootScopes)) {
+        NcError.metaError({
+          message: 'Invalid scope',
+          sql: '',
+        });
+      }
+
+      if (!RootScopeTables[workspace_id].includes(target)) {
+        NcError.metaError({
+          message: 'Table not accessible from this scope',
+          sql: '',
+        });
+      }
+    } else {
+      if (!base_id) {
+        NcError.metaError({
+          message: 'Base ID is required',
+          sql: '',
+        });
+      }
+      commonProps.base_id = base_id;
+    }
 
     for (const d of Array.isArray(data) ? data : [data]) {
       const id = d?.id || (await this.genNanoid(target));

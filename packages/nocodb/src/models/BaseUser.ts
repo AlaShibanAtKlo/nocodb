@@ -35,9 +35,15 @@ export default class BaseUser {
       extractProps(baseUser, ['fk_user_id', 'base_id', 'roles']),
     );
 
+    if (!insertObj.length) {
+      return;
+    }
+
+    const base = await Base.get(insertObj[0].base_id, ncMeta);
+
     const bulkData = await ncMeta.bulkMetaInsert(
-      null,
-      null,
+      base.fk_workspace_id,
+      base.id,
       MetaTable.PROJECT_USERS,
       insertObj,
       true,

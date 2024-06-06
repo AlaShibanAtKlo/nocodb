@@ -1341,21 +1341,37 @@ export default class Column<T = any> implements ColumnType {
       columns.push(colWithId);
     }
 
+    if (columns.length === 0) return [];
+
+    const model = await Model.getByIdOrName(
+      {
+        id: param.fk_model_id,
+      },
+      ncMeta,
+    );
+
     // bulk insert columns
     await ncMeta.bulkMetaInsert(
-      null,
-      null,
+      model.fk_workspace_id,
+      model.base_id,
       MetaTable.COLUMNS,
       extractedColumnMetas,
       true,
     );
 
-    await Column.bulkInsertColOption(columns, ncMeta);
+    await Column.bulkInsertColOption(
+      model.fk_workspace_id,
+      model.base_id,
+      columns,
+      ncMeta,
+    );
 
     return columns;
   }
 
   private static async bulkInsertColOption<T>(
+    workspace_id: string,
+    base_id: string,
     columns: (Partial<T> & { source_id?: string; [p: string]: any })[],
     ncMeta = Noco.ncMeta,
   ) {
@@ -1505,8 +1521,8 @@ export default class Column<T = any> implements ColumnType {
         case UITypes.SingleSelect:
         case UITypes.MultiSelect:
           await ncMeta.bulkMetaInsert(
-            null,
-            null,
+            workspace_id,
+            base_id,
             MetaTable.COL_SELECT_OPTIONS,
             insertGroups.get(group),
           );
@@ -1514,8 +1530,8 @@ export default class Column<T = any> implements ColumnType {
 
         case UITypes.Lookup:
           await ncMeta.bulkMetaInsert(
-            null,
-            null,
+            workspace_id,
+            base_id,
             MetaTable.COL_LOOKUP,
             insertGroups.get(group),
           );
@@ -1523,8 +1539,8 @@ export default class Column<T = any> implements ColumnType {
 
         case UITypes.Rollup:
           await ncMeta.bulkMetaInsert(
-            null,
-            null,
+            workspace_id,
+            base_id,
             MetaTable.COL_ROLLUP,
             insertGroups.get(group),
           );
@@ -1532,32 +1548,32 @@ export default class Column<T = any> implements ColumnType {
         case UITypes.Links:
         case UITypes.LinkToAnotherRecord:
           await ncMeta.bulkMetaInsert(
-            null,
-            null,
+            workspace_id,
+            base_id,
             MetaTable.COL_RELATIONS,
             insertGroups.get(group),
           );
           break;
         case UITypes.QrCode:
           await ncMeta.bulkMetaInsert(
-            null,
-            null,
+            workspace_id,
+            base_id,
             MetaTable.COL_QRCODE,
             insertGroups.get(group),
           );
           break;
         case UITypes.Barcode:
           await ncMeta.bulkMetaInsert(
-            null,
-            null,
+            workspace_id,
+            base_id,
             MetaTable.COL_BARCODE,
             insertGroups.get(group),
           );
           break;
         case UITypes.Formula:
           await ncMeta.bulkMetaInsert(
-            null,
-            null,
+            workspace_id,
+            base_id,
             MetaTable.COL_FORMULA,
             insertGroups.get(group),
           );

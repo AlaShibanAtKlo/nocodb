@@ -60,24 +60,6 @@ export default class Hook implements HookType {
     return await Filter.rootFilterListByHook({ hookId: this.id }, ncMeta);
   }
 
-  // public static async insert(hook: Partial<Hook>) {
-  //   const { id } = await ncMeta.metaInsert2(null, null, MetaTable.HOOKS, {
-  //     // user: hook.user,
-  //     // ip: hook.ip,
-  //     // source_id: hook.source_id,
-  //     // base_id: hook.base_id,
-  //     // row_id: hook.row_id,
-  //     // fk_model_id: hook.fk_model_id,
-  //     // op_type: hook.op_type,
-  //     // op_sub_type: hook.op_sub_type,
-  //     // status: hook.status,
-  //     // description: hook.description,
-  //     // details: hook.details
-  //   });
-  //
-  //   return this.get(id);
-  // }
-
   static async list(
     param: {
       fk_model_id: string;

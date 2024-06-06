@@ -469,6 +469,7 @@ export default class Model implements TableType {
     }
 
     return new BaseModelSqlv2({
+      context,
       dbDriver: args.dbDriver,
       viewId: args.viewId,
       model,

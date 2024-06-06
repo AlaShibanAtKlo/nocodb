@@ -5,9 +5,9 @@ import debug from 'debug';
 import { Injectable } from '@nestjs/common';
 import { elapsedTime, initTime } from '../../helpers';
 import type { BaseModelSqlv2 } from '~/db/BaseModelSqlv2';
-import type { LinkToAnotherRecordColumn } from '~/models';
-import { View } from '~/models';
-import { Base, Filter, Hook, Model, Source } from '~/models';
+import type { View } from '~/models';
+import type { NcContext } from '~/interface/config';
+import { Base, Hook, Model, Source } from '~/models';
 import NcConnectionMgrv2 from '~/utils/common/NcConnectionMgrv2';
 import { getViewAndModelByAliasOrId } from '~/helpers/dataHelpers';
 import {
@@ -26,12 +26,15 @@ export class ExportService {
 
   constructor(private datasService: DatasService) {}
 
-  async serializeModels(param: {
-    modelIds: string[];
-    excludeViews?: boolean;
-    excludeHooks?: boolean;
-    excludeData?: boolean;
-  }) {
+  async serializeModels(
+    context: NcContext,
+    param: {
+      modelIds: string[];
+      excludeViews?: boolean;
+      excludeHooks?: boolean;
+      excludeData?: boolean;
+    },
+  ) {
     const { modelIds } = param;
 
     const excludeData = param?.excludeData || false;
@@ -48,17 +51,17 @@ export class ExportService {
     const modelsMap = new Map<string, Model[]>();
 
     for (const modelId of modelIds) {
-      const model = await Model.get(modelId);
+      const model = await Model.get(context, modelId);
 
       let pgSerialLastVal;
 
       if (!model) return NcError.tableNotFound(modelId);
 
       const fndProject = bases.find((p) => p.id === model.base_id);
-      const base = fndProject || (await Base.get(model.base_id));
+      const base = fndProject || (await Base.get(context, model.base_id));
 
       const fndBase = sources.find((b) => b.id === model.source_id);
-      const source = fndBase || (await Source.get(model.source_id));
+      const source = fndBase || (await Source.get(context, model.source_id));
 
       if (!fndProject) bases.push(base);
       if (!fndBase) sources.push(source);
@@ -67,8 +70,8 @@ export class ExportService {
         modelsMap.set(source.id, await generateBaseIdMap(source, idMap));
       }
 
-      await model.getColumns();
-      await model.getViews();
+      await model.getColumns(context);
+      await model.getViews(context);
 
       // if views are excluded, filter all views except default
       if (excludeViews) {
@@ -76,14 +79,14 @@ export class ExportService {
       }
 
       for (const column of model.columns) {
-        await column.getColOptions();
+        await column.getColOptions(context);
 
         // if data is not excluded, get currval for ai column (pg)
         if (!excludeData) {
           if (source.type === 'pg') {
             if (column.ai) {
               try {
-                const baseModel = await Model.getBaseModelSQL({
+                const baseModel = await Model.getBaseModelSQL(context, {
                   id: model.id,
                   viewId: null,
                   dbDriver: await NcConnectionMgrv2.get(source),
@@ -223,9 +226,9 @@ export class ExportService {
 
       for (const view of model.views) {
         idMap.set(view.id, `${idMap.get(model.id)}::${view.id}`);
-        await view.getColumns();
-        await view.getFilters();
-        await view.getSorts();
+        await view.getColumns(context);
+        await view.getFilters(context);
+        await view.getSorts(context);
         if (view.filter) {
           const export_filters = [];
           for (const fl of view.filter.children) {
@@ -317,12 +320,12 @@ export class ExportService {
       const serializedHooks = [];
 
       if (!excludeHooks) {
-        const hooks = await Hook.list({ fk_model_id: model.id });
+        const hooks = await Hook.list(context, { fk_model_id: model.id });
 
         for (const hook of hooks) {
           idMap.set(hook.id, `${idMap.get(hook.fk_model_id)}::${hook.id}`);
 
-          const hookFilters = await hook.getFilters();
+          const hookFilters = await hook.getFilters(context);
           const export_filters = [];
 
           if (hookFilters) {
@@ -428,15 +431,18 @@ export class ExportService {
     return serializedModels;
   }
 
-  async streamModelDataAsCsv(param: {
-    dataStream: Readable;
-    linkStream: Readable;
-    baseId: string;
-    modelId: string;
-    viewId?: string;
-    handledMmList?: string[];
-    _fieldIds?: string[];
-  }) {
+  async streamModelDataAsCsv(
+    context: NcContext,
+    param: {
+      dataStream: Readable;
+      linkStream: Readable;
+      baseId: string;
+      modelId: string;
+      viewId?: string;
+      handledMmList?: string[];
+      _fieldIds?: string[];
+    },
+  ) {
     const { dataStream, linkStream, handledMmList } = param;
 
     const { model, view } = await getViewAndModelByAliasOrId({
@@ -445,9 +451,9 @@ export class ExportService {
       viewName: param.viewId,
     });
 
-    const source = await Source.get(model.source_id);
+    const source = await Source.get(context, model.source_id);
 
-    await model.getColumns();
+    await model.getColumns(context);
 
     const btMap = new Map<string, string>();
 
@@ -457,7 +463,7 @@ export class ExportService {
         (col.colOptions?.type === RelationTypes.BELONGS_TO ||
           (col.colOptions?.type === RelationTypes.ONE_TO_ONE && col.meta?.bt)),
     )) {
-      await column.getColOptions();
+      await column.getColOptions(context);
       const fkCol = model.columns.find(
         (c) => c.id === column.colOptions?.fk_child_column_id,
       );
@@ -552,7 +558,7 @@ export class ExportService {
       return { data };
     };
 
-    const baseModel = await Model.getBaseModelSQL({
+    const baseModel = await Model.getBaseModelSQL(context, {
       id: model.id,
       viewId: view?.id,
       dbDriver: await NcConnectionMgrv2.get(source),
@@ -586,9 +592,9 @@ export class ExportService {
       for (const mm of mmColumns) {
         if (handledMmList.includes(mm.colOptions?.fk_mm_model_id)) continue;
 
-        const mmModel = await Model.get(mm.colOptions?.fk_mm_model_id);
+        const mmModel = await Model.get(context, mm.colOptions?.fk_mm_model_id);
 
-        await mmModel.getColumns();
+        await mmModel.getColumns(context);
 
         const childColumn = mmModel.columns.find(
           (col) => col.id === mm.colOptions?.fk_mm_child_column_id,
@@ -624,9 +630,9 @@ export class ExportService {
         const mmBase =
           mmModel.source_id === source.id
             ? source
-            : await Source.get(mmModel.source_id);
+            : await Source.get(context, mmModel.source_id);
 
-        const mmBaseModel = await Model.getBaseModelSQL({
+        const mmBaseModel = await Model.getBaseModelSQL(context, {
           id: mmModel.id,
           dbDriver: await NcConnectionMgrv2.get(mmBase),
         });
@@ -765,21 +771,24 @@ export class ExportService {
     });
   }
 
-  async exportBase(param: { path: string; sourceId: string }) {
+  async exportBase(
+    context: NcContext,
+    param: { path: string; sourceId: string },
+  ) {
     const hrTime = initTime();
 
-    const source = await Source.get(param.sourceId);
+    const source = await Source.get(context, param.sourceId);
 
     if (!source) NcError.sourceNotFound(param.sourceId);
 
-    const base = await Base.get(source.base_id);
+    const base = await Base.get(context, source.base_id);
 
-    const models = (await source.getModels()).filter(
+    const models = (await source.getModels(context)).filter(
       // TODO revert this when issue with cache is fixed
       (m) => m.source_id === source.id && !m.mm && m.type === 'table',
     );
 
-    const exportedModels = await this.serializeModels({
+    const exportedModels = await this.serializeModels(context, {
       modelIds: models.map((m) => m.id),
     });
 
@@ -857,7 +866,7 @@ export class ExportService {
 
         let error = null;
 
-        this.streamModelDataAsCsv({
+        this.streamModelDataAsCsv(context, {
           dataStream,
           linkStream,
           baseId: base.id,

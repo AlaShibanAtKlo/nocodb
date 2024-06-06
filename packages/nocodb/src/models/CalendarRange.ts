@@ -4,8 +4,6 @@ import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
 import { extractProps } from '~/helpers/extractProps';
 import { CacheDelDirection, CacheScope, MetaTable } from '~/utils/globals';
-import { Column } from '~/models';
-import { NcError } from '~/helpers/catchError';
 
 export default class CalendarRange implements CalendarRangeType {
   id?: string;

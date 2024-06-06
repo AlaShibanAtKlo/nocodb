@@ -21,8 +21,8 @@ export default class SyncSource {
     Object.assign(this, syncSource);
   }
 
-  public getUser(context: NcContext, ncMeta = Noco.ncMeta) {
-    return User.get(context, this.fk_user_id, ncMeta);
+  public getUser(ncMeta = Noco.ncMeta) {
+    return User.get(this.fk_user_id, ncMeta);
   }
 
   public static async get(

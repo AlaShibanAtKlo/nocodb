@@ -250,7 +250,7 @@ export default class Hook implements HookType {
         `${CacheScope.FILTER_EXP}:${filter.id}`,
         CacheDelDirection.CHILD_TO_PARENT,
       );
-      await HookFilter.delete(filter.id);
+      await HookFilter.delete(context, filter.id, ncMeta);
     }
     // Delete Hook
     await NocoCache.deepDel(

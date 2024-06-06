@@ -167,14 +167,9 @@ export default class Column<T = any> implements ColumnType {
 
     insertObj.order =
       column.order ??
-      (await ncMeta.metaGetNextOrder(
-        context.workspace_id,
-        context.base_id,
-        MetaTable.COLUMNS,
-        {
-          fk_model_id: column.fk_model_id,
-        },
-      ));
+      (await ncMeta.metaGetNextOrder(MetaTable.COLUMNS, {
+        fk_model_id: column.fk_model_id,
+      }));
 
     if (column.validate) {
       if (typeof column.validate === 'string')
@@ -624,8 +619,6 @@ export default class Column<T = any> implements ColumnType {
   public static async get(
     context: NcContext,
     {
-      source_id,
-      db_alias,
       colId,
     }: {
       source_id?: string;
@@ -949,7 +942,7 @@ export default class Column<T = any> implements ColumnType {
           condition: { fk_column_id: id },
         },
       );
-      await ncMeta.metaDelete(context.workspace_id, context.base_id, {
+      await ncMeta.metaDelete(context.workspace_id, context.base_id, table, {
         fk_column_id: id,
       });
       for (const viewColumn of viewColumns) {

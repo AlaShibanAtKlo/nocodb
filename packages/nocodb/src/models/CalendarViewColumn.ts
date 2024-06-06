@@ -74,8 +74,6 @@ export default class CalendarViewColumn {
     ]);
 
     insertObj.order = await ncMeta.metaGetNextOrder(
-      context.workspace_id,
-      context.base_id,
       MetaTable.CALENDAR_VIEW_COLUMNS,
       {
         fk_view_id: insertObj.fk_view_id,
@@ -90,8 +88,13 @@ export default class CalendarViewColumn {
     );
 
     {
-      const view = await View.get(column.fk_view_id, ncMeta);
-      await View.clearSingleQueryCache(view.fk_model_id, [view], ncMeta);
+      const view = await View.get(context, column.fk_view_id, ncMeta);
+      await View.clearSingleQueryCache(
+        context,
+        view.fk_model_id,
+        [view],
+        ncMeta,
+      );
     }
 
     return this.get(context, id, ncMeta).then(async (viewColumn) => {
@@ -179,8 +182,8 @@ export default class CalendarViewColumn {
     // on view column update, delete any optimised single query cache
     {
       const viewCol = await this.get(context, columnId, ncMeta);
-      const view = await View.get(viewCol.fk_view_id, ncMeta);
-      await View.clearSingleQueryCache(view.fk_model_id, [view]);
+      const view = await View.get(context, viewCol.fk_view_id, ncMeta);
+      await View.clearSingleQueryCache(context, view.fk_model_id, [view]);
     }
 
     return res;

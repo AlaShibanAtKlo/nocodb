@@ -58,7 +58,10 @@ export default class Filter implements FilterType {
     ncMeta = Noco.ncMeta,
   ): Promise<Model> {
     return this.fk_view_id
-      ? (await View.get(context, this.fk_view_id, ncMeta)).getModel(ncMeta)
+      ? (await View.get(context, this.fk_view_id, ncMeta)).getModel(
+          context,
+          ncMeta,
+        )
       : Model.getByIdOrName(
           context,
           {
@@ -302,7 +305,7 @@ export default class Filter implements FilterType {
 
     const deleteRecursively = async (filter: Filter) => {
       if (!filter) return;
-      for (const f of (await filter?.getChildren()) || [])
+      for (const f of (await filter?.getChildren(context, ncMeta)) || [])
         await deleteRecursively(f);
       await ncMeta.metaDelete(
         context.workspace_id,
@@ -408,8 +411,8 @@ export default class Filter implements FilterType {
   //   if (!viewId) return null;
   //
   //   const filterObj = await ncMeta.metaGet2(
-  context.workspace_id,
-  context.base_id,
+  // context.workspace_id,
+  // context.base_id,
   //     MetaTable.FILTER_EXP,
   //     { fk_view_id: viewId, fk_parent_id: null }
   //   );

@@ -71,9 +71,9 @@ export default class GalleryView implements GalleryType {
     view: Partial<GalleryView>,
     ncMeta = Noco.ncMeta,
   ) {
-    const columns = await View.get(view.fk_view_id, ncMeta)
-      .then((v) => v?.getModel(ncMeta))
-      .then((m) => m.getColumns(ncMeta));
+    const columns = await View.get(context, view.fk_view_id, ncMeta)
+      .then((v) => v?.getModel(context, ncMeta))
+      .then((m) => m.getColumns(context, ncMeta));
 
     const insertObj = extractProps(view, [
       'base_id',

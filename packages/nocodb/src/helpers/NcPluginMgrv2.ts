@@ -67,14 +67,19 @@ class NcPluginMgrv2 {
   public static async init(ncMeta = Noco.ncMeta): Promise<void> {
     /* Populate rows into nc_plugins table if not present */
     for (const plugin of defaultPlugins) {
-      const pluginConfig = await ncMeta.metaGet(context.workspace_id, context.base_id, MetaTable.PLUGIN, {
-        title: plugin.title,
-      });
+      const pluginConfig = await ncMeta.metaGet(
+        RootScopes.ROOT,
+        RootScopes.ROOT,
+        MetaTable.PLUGIN,
+        {
+          title: plugin.title,
+        },
+      );
 
       if (!pluginConfig) {
         await ncMeta.metaInsert2(
-          context.workspace_id,
-          context.base_id,
+          RootScopes.ROOT,
+          RootScopes.ROOT,
           MetaTable.PLUGIN,
           {
             title: plugin.title,
@@ -88,8 +93,8 @@ class NcPluginMgrv2 {
         );
       } else if (pluginConfig.version !== plugin.version) {
         await ncMeta.metaUpdate(
-          context.workspace_id,
-          context.base_id,
+          RootScopes.ROOT,
+          RootScopes.ROOT,
           MetaTable.PLUGIN,
           {
             title: plugin.title,
@@ -157,10 +162,15 @@ class NcPluginMgrv2 {
   public static async storageAdapter(
     ncMeta = Noco.ncMeta,
   ): Promise<IStorageAdapterV2> {
-    const pluginData = await ncMeta.metaGet2(context.workspace_id, context.base_id, MetaTable.PLUGIN, {
-      category: PluginCategory.STORAGE,
-      active: true,
-    });
+    const pluginData = await ncMeta.metaGet2(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.PLUGIN,
+      {
+        category: PluginCategory.STORAGE,
+        active: true,
+      },
+    );
 
     if (!pluginData) return new Local();
 
@@ -182,10 +192,15 @@ class NcPluginMgrv2 {
     isUserInvite = true,
     ncMeta = Noco.ncMeta,
   ): Promise<IEmailAdapter> {
-    const pluginData = await ncMeta.metaGet2(context.workspace_id, context.base_id, MetaTable.PLUGIN, {
-      category: PluginCategory.EMAIL,
-      active: true,
-    });
+    const pluginData = await ncMeta.metaGet2(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.PLUGIN,
+      {
+        category: PluginCategory.EMAIL,
+        active: true,
+      },
+    );
 
     if (!pluginData) {
       // return null to show the invite link in UI
@@ -212,10 +227,15 @@ class NcPluginMgrv2 {
     title: string,
     ncMeta = Noco.ncMeta,
   ): Promise<IWebhookNotificationAdapter> {
-    const pluginData = await ncMeta.metaGet2(context.workspace_id, context.base_id, MetaTable.PLUGIN, {
-      title,
-      active: true,
-    });
+    const pluginData = await ncMeta.metaGet2(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.PLUGIN,
+      {
+        title,
+        active: true,
+      },
+    );
 
     if (!pluginData) throw new Error('Plugin not configured / active');
 

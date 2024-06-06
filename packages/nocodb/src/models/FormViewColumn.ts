@@ -4,6 +4,7 @@ import type {
   MetaType,
   StringOrNullType,
 } from 'nocodb-sdk';
+import type { NcContext } from '~/interface/config';
 import View from '~/models/View';
 import Noco from '~/Noco';
 import NocoCache from '~/cache/NocoCache';
@@ -33,7 +34,11 @@ export default class FormViewColumn implements FormColumnType {
     Object.assign(this, data);
   }
 
-  public static async get(context: NcContext, formViewColumnId: string, ncMeta = Noco.ncMeta) {
+  public static async get(
+    context: NcContext,
+    formViewColumnId: string,
+    ncMeta = Noco.ncMeta,
+  ) {
     let viewColumn =
       formViewColumnId &&
       (await NocoCache.get(
@@ -61,7 +66,11 @@ export default class FormViewColumn implements FormColumnType {
     return viewColumn && new FormViewColumn(viewColumn);
   }
 
-  static async insert(context: NcContext, column: Partial<FormViewColumn>, ncMeta = Noco.ncMeta) {
+  static async insert(
+    context: NcContext,
+    column: Partial<FormViewColumn>,
+    ncMeta = Noco.ncMeta,
+  ) {
     const insertObj = extractProps(column, [
       'fk_view_id',
       'fk_column_id',

@@ -30,6 +30,7 @@ export default class BarcodeColumn {
     ]);
 
     const column = await Column.get(
+      context,
       {
         colId: insertObj.fk_column_id,
       },

@@ -114,7 +114,7 @@ export default class Source implements SourceType {
     },
     ncMeta = Noco.ncMeta,
   ) {
-    const oldSource = await Source.get(sourceId, false, ncMeta);
+    const oldSource = await Source.get(context, sourceId, false, ncMeta);
 
     if (!oldSource) NcError.sourceNotFound(sourceId);
 
@@ -488,7 +488,7 @@ export default class Source implements SourceType {
     ncMeta = Noco.ncMeta,
     { force }: { force?: boolean } = {},
   ) {
-    const bases = await Base.list(context, { baseId: this.base_id }, ncMeta);
+    const bases = await Base.list({ baseId: this.base_id }, ncMeta);
 
     if (bases[0].id === this.id && !force) {
       NcError.badRequest('Cannot delete first base');

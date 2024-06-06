@@ -87,6 +87,7 @@ export default class Comment implements CommentType {
 
     if (!insertObj.source_id) {
       const model = await Model.getByIdOrName(
+        context,
         { id: insertObj.fk_model_id },
         ncMeta,
       );
@@ -108,8 +109,6 @@ export default class Comment implements CommentType {
     comment: Partial<Comment>,
     ncMeta = Noco.ncMeta,
   ) {
-    const existingComment = await Comment.get(context, commentId, ncMeta);
-
     const updateObj = extractProps(comment, ['comment', 'resolved_by']);
 
     await ncMeta.metaUpdate(

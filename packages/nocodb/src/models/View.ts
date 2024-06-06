@@ -286,7 +286,7 @@ export default class View implements ViewType {
 
     const copyFromView =
       view.copy_from_id && (await View.get(context, view.copy_from_id, ncMeta));
-    await copyFromView?.getView();
+    await copyFromView?.getView(context);
 
     const { id: view_id } = await ncMeta.metaInsert2(
       context.workspace_id,
@@ -1197,8 +1197,6 @@ export default class View implements ViewType {
     { password }: { password: string },
     ncMeta = Noco.ncMeta,
   ) {
-    const view = await this.get(context, viewId, ncMeta);
-
     // set meta
     await ncMeta.metaUpdate(
       context.workspace_id,
@@ -1220,8 +1218,6 @@ export default class View implements ViewType {
     viewId,
     ncMeta = Noco.ncMeta,
   ) {
-    const view = await this.get(context, viewId, ncMeta);
-
     // set meta
     await ncMeta.metaUpdate(
       context.workspace_id,
@@ -1294,7 +1290,7 @@ export default class View implements ViewType {
 
     if (view.type === ViewTypes.GRID) {
       if ('show_system_fields' in updateObj) {
-        await View.fixPVColumnForView(viewId, ncMeta);
+        await View.fixPVColumnForView(context, viewId, ncMeta);
       }
     }
 
@@ -1404,7 +1400,7 @@ export default class View implements ViewType {
     const scope = this.extractViewColumnsTableNameScope(view);
 
     const columns = await view
-      .getModel(ncMeta)
+      .getModel(context, ncMeta)
       .then((meta) => meta.getColumns(context, ncMeta));
     const viewColumns = await this.getColumns(context, viewId, ncMeta);
     const availableColumnsInView = viewColumns.map(
@@ -1580,7 +1576,11 @@ export default class View implements ViewType {
     return sharedViews?.map((v) => new View(v));
   }
 
-  static async fixPVColumnForView(context: NcContext, viewId, ncMeta = Noco.ncMeta) {
+  static async fixPVColumnForView(
+    context: NcContext,
+    viewId,
+    ncMeta = Noco.ncMeta,
+  ) {
     // get a list of view columns sorted by order
     const view_columns = await ncMeta.metaList2(
       context.workspace_id,
@@ -1818,7 +1818,11 @@ export default class View implements ViewType {
       let calendarRangeColumns;
 
       if (view.type == ViewTypes.CALENDAR) {
-        const calendarRange = await CalendarRange.read(context, view.id, ncMeta);
+        const calendarRange = await CalendarRange.read(
+          context,
+          view.id,
+          ncMeta,
+        );
         if (calendarRange) {
           calendarRangeColumns = calendarRange.ranges
             .map((range) => [
@@ -1985,9 +1989,13 @@ export default class View implements ViewType {
 
     const copyFromView =
       view.copy_from_id && (await View.get(context, view.copy_from_id, ncMeta));
-    await copyFromView?.getView();
+    await copyFromView?.getView(context);
 
-    const table = await Model.getByIdOrName(context, { id: view.fk_model_id }, ncMeta);
+    const table = await Model.getByIdOrName(
+      context,
+      { id: view.fk_model_id },
+      ncMeta,
+    );
 
     // get base and base id if missing
     if (!view.source_id) {
@@ -2291,7 +2299,10 @@ export default class View implements ViewType {
     ));
   }
 
-  async getModelWithInfo(context: NcContext, ncMeta = Noco.ncMeta): Promise<Model> {
+  async getModelWithInfo(
+    context: NcContext,
+    ncMeta = Noco.ncMeta,
+  ): Promise<Model> {
     return (this.model = await Model.getWithInfo(
       context,
       { id: this.fk_model_id },
@@ -2299,25 +2310,25 @@ export default class View implements ViewType {
     ));
   }
 
-  async getView<T>(context: NcContext): Promise<T> {
+  async getView<T>(context: NcContext, ncMeta = Noco.ncMeta): Promise<T> {
     switch (this.type) {
       case ViewTypes.GRID:
-        this.view = await GridView.get(context, this.id);
+        this.view = await GridView.get(context, this.id, ncMeta);
         break;
       case ViewTypes.KANBAN:
-        this.view = await KanbanView.get(context, this.id);
+        this.view = await KanbanView.get(context, this.id, ncMeta);
         break;
       case ViewTypes.GALLERY:
-        this.view = await GalleryView.get(context, this.id);
+        this.view = await GalleryView.get(context, this.id, ncMeta);
         break;
       case ViewTypes.MAP:
-        this.view = await MapView.get(context, this.id);
+        this.view = await MapView.get(context, this.id, ncMeta);
         break;
       case ViewTypes.FORM:
-        this.view = await FormView.get(context, this.id);
+        this.view = await FormView.get(context, this.id, ncMeta);
         break;
       case ViewTypes.CALENDAR:
-        this.view = await CalendarView.get(context, this.id);
+        this.view = await CalendarView.get(context, this.id, ncMeta);
         break;
     }
     return <T>this.view;

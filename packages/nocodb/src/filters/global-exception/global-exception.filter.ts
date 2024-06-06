@@ -18,9 +18,6 @@ import {
   UnprocessableEntity,
 } from '~/helpers/catchError';
 
-// temp debug
-process.env.NC_ENABLE_ALL_API_ERROR_LOGGING = 'true';
-
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   constructor(

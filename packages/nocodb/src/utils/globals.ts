@@ -278,6 +278,7 @@ export const RootScopeTables = {
     MetaTable.API_TOKENS,
     MetaTable.PLUGIN,
     MetaTable.STORE,
+    MetaTable.NOTIFICATION,
     // Temporarily added need to be discussed within team
     MetaTable.AUDIT,
   ],

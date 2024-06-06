@@ -26,7 +26,7 @@ function formulaRegExpBased() {
     base = await createProject(context);
 
     ctx = {
-      workspace_id: context.workspace_id,
+      workspace_id: base.workspace_id,
       base_id: base.id,
     };
 

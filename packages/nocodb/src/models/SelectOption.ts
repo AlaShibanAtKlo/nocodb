@@ -76,9 +76,24 @@ export default class SelectOption implements SelectOptionType {
       insertObj.push(tempObj);
     }
 
+    if (!insertObj.length) {
+      return false;
+    }
+
+    const column = await Column.get(
+      {
+        colId: insertObj[0].fk_column_id,
+      },
+      ncMeta,
+    );
+
+    if (!column) {
+      NcError.fieldNotFound(insertObj[0].fk_column_id);
+    }
+
     const bulkData = await ncMeta.bulkMetaInsert(
-      null,
-      null,
+      column.fk_workspace_id,
+      column.base_id,
       MetaTable.COL_SELECT_OPTIONS,
       insertObj,
     );
